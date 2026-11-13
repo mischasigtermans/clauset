@@ -1,0 +1,31 @@
+[package]
+name = "clauset"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.88"
+description = "Several Claude Code accounts on one Mac, sharing one ~/.claude"
+repository = "https://github.com/mischasigtermans/clauset"
+readme = "README.md"
+keywords = ["claude", "claude-code", "accounts", "cli"]
+categories = ["command-line-utilities"]
+license = "MIT"
+
+[dependencies]
+anyhow = "1"
+chrono = { version = "0.4.45", default-features = false, features = ["clock"] }
+clap = { version = "4", features = ["derive"] }
+cliclack = "0.5.7"
+console = "0.16.6"
+libc = "0.2"
+serde = { version = "1", features = ["derive"] }
+serde_json = { version = "1", features = ["preserve_order"] }
+sha2 = "0.10"
+toml = "0.8"
+toml_edit = "0.22"
+
+[dev-dependencies]
+tempfile = "3"
+
+[profile.release]
+strip = true
+lto = true

@@ -1,0 +1,7 @@
+/target/
+
+# Cargo.lock is committed: clauset ships a binary.
+
+.idea/
+.vscode/
+.DS_Store
