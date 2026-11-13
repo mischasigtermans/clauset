@@ -104,6 +104,27 @@ fn stdout(output: Output) -> String {
 }
 
 #[test]
+fn run_leaves_the_hubs_servers_out_when_the_caller_asks_for_its_own_alone() {
+    let world = World::new();
+    fs::write(
+        world.home().join(".claude.json"),
+        r#"{"mcpServers":{"bear":{"command":"bearcli"}}}"#,
+    )
+    .unwrap();
+    let out = stdout(
+        world
+            .clauset("misc")
+            .args(["run", "personal", "--strict-mcp-config", "-p", "hi there"])
+            .output()
+            .unwrap(),
+    );
+    assert!(
+        out.contains("ARGS:--strict-mcp-config -p hi there"),
+        "{out}"
+    );
+}
+
+#[test]
 fn run_starts_another_account_with_its_dir_plugins_and_the_hubs_servers() {
     let world = World::new();
     let home = world.home();

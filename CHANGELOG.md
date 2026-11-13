@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.1.1] - 2026-11-13
+
+**Fixed**
+
+- `--strict-mcp-config` works on an account beside the hub. clauset added the hub's servers through `--mcp-config` on every start, so a caller who asked for its own servers alone still got all of the hub's.
+
 ## [0.1.0] - 2026-11-13
 
 **Added**

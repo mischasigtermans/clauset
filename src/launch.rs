@@ -77,6 +77,12 @@ pub fn command(
     Ok(command)
 }
 
+/// The directory whose MCP servers the hub shares with this start: none once
+/// the caller asks Claude Code for its own `--mcp-config` alone.
+fn shared_servers<'a>(cwd: &'a Path, args: &[OsString]) -> Option<&'a Path> {
+    (!args.iter().any(|arg| arg == "--strict-mcp-config")).then_some(cwd)
+}
+
 fn mcp_dir(config: &Config) -> Option<PathBuf> {
     Some(Config::path(&config.home).parent()?.join("mcp"))
 }
@@ -176,7 +182,7 @@ pub fn start(
     if std::io::stdin().is_terminal() {
         return supervise(config, name, claude, cwd, args);
     }
-    let mut command = command(config, name, claude, Some(cwd))?;
+    let mut command = command(config, name, claude, shared_servers(cwd, &args))?;
     command.args(args);
     Err(exec(command))
 }
@@ -214,7 +220,7 @@ fn supervise(
     }
     let mut account = name.to_owned();
     loop {
-        let mut command = command(config, &account, claude, Some(cwd))?;
+        let mut command = command(config, &account, claude, shared_servers(cwd, &args))?;
         command
             .args(&args)
             .env(switch::SUPERVISOR, std::process::id().to_string());

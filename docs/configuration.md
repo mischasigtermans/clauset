@@ -27,7 +27,7 @@ Everything in the hub except what Claude Code keeps per account or org: `.claude
 
 Shared on purpose: `projects/` (sessions and auto-memory), `history.jsonl` and `sessions/` (so `ListAgents` and `SendMessage` reach sessions on every account). A session started on one account resumes on another with `--resume <id>`.
 
-MCP servers come from the hub: its user-scope ones and the directory's project-scope ones, written to `~/.claude/clauset/mcp/` in the shape `--mcp-config` reads and passed to every account beside the hub. `claude mcp add` in a session on such an account writes to that account's own `.claude.json`, so add servers from a session on the hub; `doctor` names user-scope servers only one account has.
+MCP servers come from the hub: its user-scope ones and the directory's project-scope ones, written to `~/.claude/clauset/mcp/` in the shape `--mcp-config` reads and passed to every account beside the hub. A start with `--strict-mcp-config` gets none of them: the flag asks Claude Code for the caller's own `--mcp-config` alone. `claude mcp add` in a session on such an account writes to that account's own `.claude.json`, so add servers from a session on the hub; `doctor` names user-scope servers only one account has.
 
 `clauset link` links what the hub gained since; `doctor` reports a link Claude Code replaced with a file.
 

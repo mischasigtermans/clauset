@@ -50,7 +50,7 @@ The usage comes from what Claude Code stores and hands its status line, so an ac
 
 - `claude` starts on the account of the session that started it, else on the default. A `CLAUDE_CONFIG_DIR` that names no account passes through untouched.
 - `clauset add --dir` takes in a config dir from another tool or alias. Its sessions, memory and skills join the hub's, and what would clash stays beside them.
-- Plugins come from the hub through `CLAUDE_CODE_PLUGIN_CACHE_DIR`; the hub's user-scope and project-scope MCP servers through `--mcp-config`. Their OAuth sign-ins, and claude.ai connectors, stay per account.
+- Plugins come from the hub through `CLAUDE_CODE_PLUGIN_CACHE_DIR`; the hub's user-scope and project-scope MCP servers through `--mcp-config`, unless the caller passes `--strict-mcp-config`. Their OAuth sign-ins, and claude.ai connectors, stay per account.
 - `clauset warn 80` puts up a notification when an account passes 80% of a limit, and a hook adds one when it hits the limit. Which account to go on with stays your choice.
 - `clauset switch <account>` moves a running session to another account: run inside the session, as `/clauset switch work`, `! clauset switch work` or by Claude when you ask, it ends the session once its turn is over and its background shells have stopped, and resumes it there in the same terminal. It also makes the account the default for new sessions. `--all` moves every session on the account you leave, each in its own terminal once its own turn is over.
 - Two skills: `/clauset <args>` runs clauset inside a session, and `accounts` tells Claude what each command does and which ones wait for your word.
