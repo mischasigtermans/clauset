@@ -40,14 +40,16 @@ fn is_executable(path: &Path) -> bool {
 /// `claude` set up for an account. Another account than the hub gets the
 /// hub's plugins and, given the directory it starts in, the hub's MCP
 /// servers: the user-scope ones and that directory's project-scope ones, each
-/// written out in the shape `--mcp-config` reads. The flags go first and in
-/// their `=` form: the option takes several values, and a separate value
-/// would swallow a prompt.
+/// written out in the shape `--mcp-config` reads. With `chrome`, every account
+/// but the one `chrome` names reaches the browser through that account. The
+/// flags go first and in their `=` form: the option takes several values, and
+/// a separate value would swallow a prompt.
 pub fn command(
     config: &Config,
     name: &str,
     claude: &Path,
     servers: Option<&Path>,
+    chrome: bool,
 ) -> Result<Command> {
     let account = config.account(name)?;
     let mut command = Command::new(claude);
@@ -56,12 +58,13 @@ pub fn command(
         command
             .env_remove("CLAUDE_CONFIG_DIR")
             .env_remove("CLAUDE_CODE_PLUGIN_CACHE_DIR");
-        return Ok(command);
+    } else {
+        command
+            .env("CLAUDE_CONFIG_DIR", &account.dir)
+            .env("CLAUDE_CODE_PLUGIN_CACHE_DIR", config.hub().join("plugins"));
     }
-    command
-        .env("CLAUDE_CONFIG_DIR", &account.dir)
-        .env("CLAUDE_CODE_PLUGIN_CACHE_DIR", config.hub().join("plugins"));
-    if let Some(cwd) = servers
+    if !config.is_hub(account)
+        && let Some(cwd) = servers
         && let Ok(hub_state) = state::read(&config.home.join(".claude.json"))
     {
         let files = [
@@ -74,6 +77,11 @@ pub fn command(
             command.arg(flag);
         }
     }
+    if chrome && let Some(file) = chrome_server(config, name, claude) {
+        let mut flag = OsString::from("--mcp-config=");
+        flag.push(file);
+        command.arg("--no-chrome").arg(flag);
+    }
     Ok(command)
 }
 
@@ -81,6 +89,52 @@ pub fn command(
 /// the caller asks Claude Code for its own `--mcp-config` alone.
 fn shared_servers<'a>(cwd: &'a Path, args: &[OsString]) -> Option<&'a Path> {
     (!args.iter().any(|arg| arg == "--strict-mcp-config")).then_some(cwd)
+}
+
+/// Whether the `chrome` account's connection replaces the session's own: not
+/// once the caller picks Chrome itself or asks for its own `--mcp-config`
+/// alone.
+fn shared_chrome(args: &[OsString]) -> bool {
+    !args
+        .iter()
+        .any(|arg| arg == "--chrome" || arg == "--no-chrome" || arg == "--strict-mcp-config")
+}
+
+/// Claude Code's own Chrome server, started on the sign-in of the account
+/// `chrome` names, for a session on any other account. Claude Code reaches
+/// Chrome through a relay that pairs a session with the extensions signed in
+/// to the same claude.ai account, so a session on another account finds
+/// none. The server runs as `command` runs that account, keeps its flag in
+/// sight, where the session's check of its organization's Claude in Chrome
+/// policy looks for it, and takes another name than `claude-in-chrome`, which
+/// `--mcp-config` refuses for a local server.
+fn chrome_server(config: &Config, name: &str, claude: &Path) -> Option<PathBuf> {
+    let owner = config.chrome.as_deref().filter(|owner| *owner != name)?;
+    let account = config.account(owner).ok()?;
+    let mut args: Vec<Value> = if config.is_hub(account) {
+        [
+            "-u",
+            "CLAUDE_CONFIG_DIR",
+            "-u",
+            "CLAUDE_CODE_PLUGIN_CACHE_DIR",
+        ]
+        .map(Value::from)
+        .into()
+    } else {
+        vec![
+            format!("CLAUDE_CONFIG_DIR={}", account.dir.to_str()?).into(),
+            format!(
+                "CLAUDE_CODE_PLUGIN_CACHE_DIR={}",
+                config.hub().join("plugins").to_str()?
+            )
+            .into(),
+        ]
+    };
+    args.extend([claude.to_str()?.into(), "--claude-in-chrome-mcp".into()]);
+    let servers = json!({
+        "chrome": { "type": "stdio", "command": "/usr/bin/env", "args": args }
+    });
+    servers_file(mcp_dir(config)?.join("chrome.json"), Some(&servers))
 }
 
 fn mcp_dir(config: &Config) -> Option<PathBuf> {
@@ -182,7 +236,13 @@ pub fn start(
     if std::io::stdin().is_terminal() {
         return supervise(config, name, claude, cwd, args);
     }
-    let mut command = command(config, name, claude, shared_servers(cwd, &args))?;
+    let mut command = command(
+        config,
+        name,
+        claude,
+        shared_servers(cwd, &args),
+        shared_chrome(&args),
+    )?;
     command.args(args);
     Err(exec(command))
 }
@@ -220,7 +280,13 @@ fn supervise(
     }
     let mut account = name.to_owned();
     loop {
-        let mut command = command(config, &account, claude, shared_servers(cwd, &args))?;
+        let mut command = command(
+            config,
+            &account,
+            claude,
+            shared_servers(cwd, &args),
+            shared_chrome(&args),
+        )?;
         command
             .args(&args)
             .env(switch::SUPERVISOR, std::process::id().to_string());

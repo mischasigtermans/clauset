@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.2.0] - 2026-11-16
+
+**Added**
+
+- A `chrome` key names the account the Claude in Chrome extension is signed in to. Every other account reaches that browser through it, as the `chrome` MCP server.
+
 ## [0.1.1] - 2026-11-13
 
 **Fixed**

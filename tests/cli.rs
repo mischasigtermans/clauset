@@ -86,6 +86,16 @@ impl World {
         self.command(&self.home().join("shim/claude"), cwd)
     }
 
+    /// The flags that give an account beside the hub the hub's Chrome.
+    fn chrome(&self) -> String {
+        format!(
+            "--no-chrome --mcp-config={}",
+            self.home()
+                .join(".claude/clauset/mcp/chrome.json")
+                .display()
+        )
+    }
+
     fn personal_dir(&self) -> String {
         self.home()
             .join(".claude-accounts/personal")
@@ -221,6 +231,96 @@ fn run_adds_the_hubs_project_servers_for_the_directory() {
     );
     assert_eq!(removed.matches("--mcp-config=").count(), 0, "{removed}");
     assert!(!file.exists(), "the copy of a removed server stays on disk");
+}
+
+#[test]
+fn run_reaches_chrome_through_the_account_chrome_names() {
+    let world = World::new();
+    let home = world.home();
+    let file = home.join(".claude/clauset/mcp/chrome.json");
+    let run = |args: &[&str]| stdout(world.clauset("misc").args(args).output().unwrap());
+    let server = || -> serde_json::Value {
+        serde_json::from_str::<serde_json::Value>(&fs::read_to_string(&file).unwrap()).unwrap()
+            ["mcpServers"]["chrome"]
+            .clone()
+    };
+    let claude = home.join("fake/claude").display().to_string();
+
+    let unset = run(&["run", "personal", "-p", "hi"]);
+    assert!(unset.contains("ARGS:-p hi"), "{unset}");
+
+    world.config(
+        r#"
+        default = "personal"
+        chrome = "team"
+        [accounts.personal]
+        dir = "~/.claude-accounts/personal"
+        [accounts.team]
+        dir = "~/.claude"
+        "#,
+    );
+    let out = run(&["run", "personal", "-p", "hi"]);
+    assert!(
+        out.contains(&format!("ARGS:{} -p hi", world.chrome())),
+        "{out}"
+    );
+    assert_eq!(
+        server(),
+        serde_json::json!({
+            "type": "stdio",
+            "command": "/usr/bin/env",
+            "args": [
+                "-u", "CLAUDE_CONFIG_DIR",
+                "-u", "CLAUDE_CODE_PLUGIN_CACHE_DIR",
+                claude,
+                "--claude-in-chrome-mcp",
+            ],
+        })
+    );
+    for args in [
+        &["run", "team", "-p", "hi"][..],
+        &["run", "personal", "--chrome", "-p", "hi"],
+        &["run", "personal", "--no-chrome", "-p", "hi"],
+        &["run", "personal", "--strict-mcp-config", "-p", "hi"],
+    ] {
+        let out = run(args);
+        assert!(!out.contains("chrome.json"), "{args:?}: {out}");
+        assert_eq!(
+            out.matches("--no-chrome").count(),
+            args.contains(&"--no-chrome") as usize,
+            "{args:?}: {out}"
+        );
+    }
+
+    world.config(
+        r#"
+        default = "personal"
+        chrome = "personal"
+        [accounts.personal]
+        dir = "~/.claude-accounts/personal"
+        [accounts.team]
+        dir = "~/.claude"
+        "#,
+    );
+    let hub = run(&["run", "team", "-p", "hi"]);
+    assert!(
+        hub.contains(&format!("ARGS:{} -p hi", world.chrome())),
+        "{hub}"
+    );
+    assert_eq!(
+        server()["args"],
+        serde_json::json!([
+            format!("CLAUDE_CONFIG_DIR={}", world.personal_dir()),
+            format!(
+                "CLAUDE_CODE_PLUGIN_CACHE_DIR={}",
+                home.join(".claude/plugins").display()
+            ),
+            claude,
+            "--claude-in-chrome-mcp",
+        ])
+    );
+    let own = run(&["run", "personal", "-p", "hi"]);
+    assert!(own.contains("ARGS:-p hi"), "{own}");
 }
 
 #[test]

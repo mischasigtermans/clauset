@@ -176,7 +176,7 @@ pub fn login(config: &Config, name: &str) -> Result<SignIn> {
     }
 
     let claude = launch::real_claude()?;
-    let mut command = launch::command(config, name, &claude, None)?;
+    let mut command = launch::command(config, name, &claude, None, false)?;
     command.args(["auth", "login"]);
     if let Some(email) = &account.email {
         command.args(["--email", email]);

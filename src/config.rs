@@ -19,6 +19,9 @@ pub struct Config {
     pub default: String,
     /// Percent of a 5-hour or 7-day limit at which to warn, for every account.
     pub warn_at: Option<f64>,
+    /// The account whose claude.ai sign-in the Claude in Chrome extension
+    /// uses; every other account reaches the browser through it.
+    pub chrome: Option<String>,
     pub accounts: BTreeMap<String, Account>,
     #[serde(skip)]
     pub home: PathBuf,
@@ -96,6 +99,11 @@ impl Config {
                 "`default` names `{}`, which is not an account",
                 config.default
             );
+        }
+        if let Some(chrome) = &config.chrome
+            && !config.accounts.contains_key(chrome)
+        {
+            bail!("`chrome` names `{chrome}`, which is not an account");
         }
         Ok(config)
     }
@@ -256,6 +264,13 @@ mod tests {
         )
         .unwrap_err();
         assert!(error.to_string().contains("`default` names `x`"));
+
+        let error = Config::parse(
+            "default = \"a\"\nchrome = \"x\"\n[accounts.a]\ndir = \"/a\"\n",
+            Path::new(HOME),
+        )
+        .unwrap_err();
+        assert!(error.to_string().contains("`chrome` names `x`"));
     }
 
     #[test]
