@@ -9,6 +9,7 @@
     "@phosphor-icons/core": "^2.1.1",
     "@tailwindcss/cli": "^4.1.0",
     "marked": "^18.2.1",
+    "node-html-parser": "^9.0.7",
     "tailwindcss": "^4.1.0"
   }
 }

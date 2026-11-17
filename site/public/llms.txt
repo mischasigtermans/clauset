@@ -1,0 +1,13 @@
+# Clauset
+
+> Clauset is a free, open-source menu bar app and command for macOS. It runs several Claude Code accounts on one Mac, sharing one ~/.claude, shows each account's usage limits, and lets you move a running session to another account when a limit nears. It never switches accounts by itself.
+
+## Pages
+
+- [Clauset: Claude Code usage and multiple accounts on Mac](https://clauset.app/index.md): Clauset is a free menu bar app for macOS. See your Claude Code usage limits for every account, and move a running session to another when one nears.
+- [Documentation](https://clauset.app/docs/index.md): The config file, how an account is picked, what's shared and what Clauset writes.
+- [Changelog](https://clauset.app/changelog/index.md): What changed in each version of Clauset, the menu bar app and the command, newest first.
+
+## Source
+
+- [GitHub repository](https://github.com/mischasigtermans/clauset): the app, the command and this site, under the MIT licence.

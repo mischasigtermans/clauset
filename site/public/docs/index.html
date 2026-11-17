@@ -5,8 +5,24 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="color-scheme" content="light dark" />
     <title>Documentation | Clauset</title>
-    <meta name="description" content="The config file, how an account is picked, what's shared and what clauset writes." />
+    <meta name="description" content="The config file, how an account is picked, what's shared and what Clauset writes." />
     <link rel="canonical" href="https://clauset.app/docs/" />
+    <link rel="alternate" type="text/markdown" href="https://clauset.app/docs/index.md" />
+    <meta property="og:site_name" content="Clauset" />
+    <meta property="og:type" content="article" />
+    <meta property="og:url" content="https://clauset.app/docs/" />
+    <meta property="og:locale" content="en_GB" />
+    <meta property="og:title" content="Documentation | Clauset" />
+    <meta property="og:description" content="The config file, how an account is picked, what's shared and what Clauset writes." />
+    <meta property="og:image" content="https://clauset.app/img/og.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Clauset: every Claude Code account, in your menu bar" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:image" content="https://clauset.app/img/og.png" />
+    <meta name="theme-color" content="#f4f5fa" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#0d1017" media="(prefers-color-scheme: dark)" />
+    <link rel="apple-touch-icon" href="../img/apple-touch-icon.png" />
     <link rel="icon" href="../img/favicon.png" />
     <link rel="stylesheet" href="../assets/site.css" />
   </head>
@@ -47,7 +63,7 @@
         <div class="mx-auto max-w-6xl px-6 lg:px-8">
           <article class="prose">
 <h1 id="configuration">Configuration</h1>
-<p><code>~/.claude/clauset/config.toml</code>, or the file <code>CLAUSET_CONFIG</code> names. Paths may start with <code>~/</code>. <code>clauset setup</code>, <code>add</code>, <code>remove</code>, <code>use</code>, <code>warn</code>, <code>chrome</code> and <code>switch</code> write it, keeping its comments, and refuse a change that would leave it invalid. What clauset records (usage, MCP server files, move requests), the shim&#39;s <code>bin/</code> and the menu bar app&#39;s <code>app.pid</code> sit in the same directory, which <code>link</code> leaves out of the accounts.</p>
+<p><code>~/.claude/clauset/config.toml</code>, or the file <code>CLAUSET_CONFIG</code> names. Paths may start with <code>~/</code>. <code>clauset setup</code>, <code>add</code>, <code>remove</code>, <code>use</code>, <code>warn</code>, <code>chrome</code> and <code>switch</code> write it, keeping its comments, and refuse a change that would leave it invalid. What clauset records (usage, MCP server files, move requests), the shim&#39;s <code>bin/</code> and the menu bar app&#39;s <code>app.pid</code> and <code>notify/</code> sit in the same directory, which <code>link</code> leaves out of the accounts.</p>
 <p><code>clauset remove &lt;account&gt;</code> takes an account out of the file and drops its recorded usage. Its config directory and Keychain item stay, so <code>clauset add &lt;account&gt; --dir &lt;dir&gt;</code> takes it back. It refuses the default, the <code>chrome</code> account, the hub and an account sessions run on.</p>
 <h2 id="keys">Keys</h2>
 <div class="table-scroll"><table>
@@ -184,7 +200,7 @@
 <p>An account shows numbers once a session has run on it; the overview says how old they are. A window Claude Code leaves out is left out of the overview too: a plan without a 5-hour limit shows its 7-day bar alone. A bar is blue, yellow from 70% and red from 90%.</p>
 <p>A weekly limit that counts one model alone, such as Fable&#39;s, is only in <code>cachedUsageUtilization</code>: a status line gets no such limit. The overview shows it on the line under the bars with its own age, which is the time since Claude Code last fetched the account&#39;s usage, often a day or more.</p>
 <p>With <code>warn_at</code> set, <code>clauset statusline</code> puts up a macOS notification the first time a window passes it, once per window: after the reset it may warn again. The <code>StopFailure</code> hook adds one when an account hits its limit, with every other account&#39;s fullest window beside it. clauset never moves work to another account on a limit; the notification leaves that choice to you. Both notifications look at the 5-hour and 7-day windows alone: a model&#39;s own weekly limit is too old a number to warn on.</p>
-<p>The menu bar app writes its process id to <code>app.pid</code>. While that process runs, clauset hands a notification to the app as <code>clauset://notify?text=…</code> and it comes under the app&#39;s name. Without the app, or when it has no permission to notify, AppleScript puts it up.</p>
+<p>The menu bar app writes its process id to <code>app.pid</code>. While that process runs, clauset leaves a notification as a file in <code>notify/</code>, a directory only you can write to, and the app posts it under its own name. Without the app, or when it has no permission to notify, AppleScript puts it up.</p>
 <h2 id="hooks-and-status-line">Hooks and status line</h2>
 <p>In the hub&#39;s <code>settings.json</code>, shared by every account, with the path of the clauset binary <code>setup</code> ran from (<code>~/.cargo/bin/clauset</code> after <code>cargo install</code>):</p>
 <pre><code class="language-json">&quot;SessionStart&quot;: [{&quot;hooks&quot;: [{&quot;type&quot;: &quot;command&quot;, &quot;command&quot;: &quot;~/.cargo/bin/clauset hook context&quot;, &quot;timeout&quot;: 5}]}],

@@ -4,19 +4,61 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="color-scheme" content="light dark" />
-    <title>Clauset: several Claude Code accounts on one Mac</title>
+    <title>Clauset: Claude Code usage and multiple accounts on Mac</title>
     <meta
       name="description"
-      content="Clauset runs several Claude Code accounts on one Mac, sharing one ~/.claude. See every account's limits in the menu bar and move a running session when a limit nears."
+      content="Clauset is a free menu bar app for macOS. See your Claude Code usage limits for every account, and move a running session to another when one nears."
     />
     <link rel="canonical" href="https://clauset.app/" />
+    <link rel="alternate" type="text/markdown" href="https://clauset.app/index.md" />
+    <meta property="og:site_name" content="Clauset" />
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://clauset.app/" />
-    <meta property="og:title" content="Clauset: several Claude Code accounts on one Mac" />
+    <meta property="og:locale" content="en_GB" />
+    <meta property="og:title" content="Clauset: Claude Code usage and multiple accounts on Mac" />
     <meta
       property="og:description"
-      content="See every account's limits in the menu bar and move a running session when a limit nears."
+      content="Clauset is a free menu bar app for macOS. See your Claude Code usage limits for every account, and move a running session to another when one nears."
     />
+    <meta property="og:image" content="https://clauset.app/img/og.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Clauset: every Claude Code account, in your menu bar" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:image" content="https://clauset.app/img/og.png" />
+    <meta name="theme-color" content="#f4f5fa" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#0d1017" media="(prefers-color-scheme: dark)" />
+    <link rel="apple-touch-icon" href="img/apple-touch-icon.png" />
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "SoftwareApplication",
+        "@id": "https://clauset.app/#app",
+        "name": "Clauset",
+        "url": "https://clauset.app/",
+        "description": "A menu bar app and a command for macOS that run several Claude Code accounts on one Mac, sharing one ~/.claude, and show each account's usage limits.",
+        "applicationCategory": "DeveloperApplication",
+        "operatingSystem": "macOS 14.4 or later",
+        "license": "https://github.com/mischasigtermans/clauset/blob/main/LICENSE",
+        "codeRepository": "https://github.com/mischasigtermans/clauset",
+        "image": "https://clauset.app/img/og.png",
+        "offers": { "@type": "Offer", "price": "0", "priceCurrency": "EUR" },
+        "author": { "@type": "Person", "name": "Mischa Sigtermans", "url": "https://mischa.sigtermans.me" }
+      }
+    </script>
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "WebSite",
+        "@id": "https://clauset.app/#website",
+        "name": "Clauset",
+        "url": "https://clauset.app/",
+        "inLanguage": "en"
+      }
+    </script>
+    <!-- faq:start -->
+    <script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Can I use multiple Claude Code accounts on one Mac?","acceptedAnswer":{"@type":"Answer","text":"Yes. Each account keeps its own sign-in in its own config directory, and they run side by side: one terminal on work, another on personal. Everything else is shared from one ~/.claude."}},{"@type":"Question","name":"How do I see my Claude Code usage?","acceptedAnswer":{"@type":"Answer","text":"The menu bar shows each account's 5-hour window, its 7-day window and the weekly limit of one model. The numbers come from what Claude Code itself stores, so an account shows them once a session has run on it."}},{"@type":"Question","name":"What happens when an account hits its usage limit?","acceptedAnswer":{"@type":"Answer","text":"Clauset posts a notification that names the account and when its limit resets. You can then move the running session to another account. Clauset never switches accounts by itself."}},{"@type":"Question","name":"Does it keep limits separate per account, or only switch logins?","acceptedAnswer":{"@type":"Answer","text":"Both. Every account keeps its own sign-in and its own limits, and Clauset shows each account's usage beside the others. Switching moves a session to another account and leaves every sign-in in place."}},{"@type":"Question","name":"Does Clauset read my tokens or send data anywhere?","acceptedAnswer":{"@type":"Answer","text":"It reads no token, and the command makes no network call. Only the official claude binary talks to Anthropic. The app asks before it goes online, then checks GitHub for a newer version once a week."}},{"@type":"Question","name":"Is Clauset free?","acceptedAnswer":{"@type":"Answer","text":"Yes. Clauset is free and open source under the MIT licence. It needs macOS 14.4 or later and Claude Code."}}]}</script>
+    <!-- faq:end -->
     <link rel="icon" href="img/favicon.png" />
     <link rel="stylesheet" href="assets/site.css" />
     <script>
@@ -67,8 +109,8 @@
               </h1>
               <p class="rise mx-auto mt-6 max-w-[52ch] text-lg/8 text-pretty text-muted [--i:1] dark:text-mist">
                 Clauset runs several Claude Code accounts on one Mac, sharing one
-                <code class="font-mono text-ink dark:text-fog">~/.claude</code>. See each account's limits, pick where new sessions start, and move a
-                running session when a limit nears.
+                <code class="font-mono text-ink dark:text-fog">~/.claude</code>. See each account's usage limits, pick where new sessions start, and
+                move a running session when a limit nears.
               </p>
               <div class="rise mt-10 flex flex-wrap items-center justify-center gap-x-8 gap-y-4 [--i:2]">
                 <a
@@ -608,9 +650,15 @@
                 The app reads and changes everything through <code class="font-mono">clauset</code>, and the command works without the app. Inside
                 a session, <code class="font-mono">clauset switch work</code> moves it to another account.
               </p>
-              <p class="mt-8 text-base/7 text-muted sm:text-sm/6 dark:text-mist">To install the command without the app:</p>
+              <p class="mt-8 text-base/7 text-muted sm:text-sm/6 dark:text-mist">To install the command without the app, with Homebrew:</p>
               <div class="term mt-3 max-w-full">
-                <pre class="whitespace-pre-wrap wrap-anywhere max-sm:text-[0.6875rem]"><span class="dim">$</span> cargo install --locked --git \
+                <pre class="whitespace-pre-wrap wrap-anywhere max-sm:px-3 max-sm:text-[0.625rem]"><span class="dim">$</span> brew trust mischasigtermans/tap
+<span class="dim">$</span> brew install mischasigtermans/tap/clauset-cli
+<span class="dim">$</span> clauset setup</pre>
+              </div>
+              <p class="mt-6 text-base/7 text-muted sm:text-sm/6 dark:text-mist">Or with Cargo:</p>
+              <div class="term mt-3 max-w-full">
+                <pre class="whitespace-pre-wrap wrap-anywhere max-sm:px-3 max-sm:text-[0.625rem]"><span class="dim">$</span> cargo install --locked --git \
 https://github.com/mischasigtermans/clauset
 <span class="dim">$</span> clauset setup</pre>
               </div>
@@ -630,6 +678,58 @@ https://github.com/mischasigtermans/clauset
 <span class="dim">$</span> clauset switch work
 <span class="dim">$</span> clauset use personal</pre>
             </div>
+          </div>
+        </section>
+
+        <!-- Questions -->
+        <section id="questions" class="scroll-mt-16 py-20 sm:py-28">
+          <div class="mx-auto max-w-6xl px-6 lg:px-8">
+            <div class="reveal" data-watch>
+              <h2 class="max-w-[24ch] text-4xl font-semibold tracking-tight text-balance sm:text-5xl">Questions, answered.</h2>
+            </div>
+            <dl class="reveal mt-14 grid grid-cols-1 gap-x-4 gap-y-10 lg:grid-cols-2" data-watch data-faq>
+              <div class="lg:pr-12">
+                <dt class="text-lg/7 font-semibold tracking-tight">Can I use multiple Claude Code accounts on one Mac?</dt>
+                <dd class="mt-2 max-w-[56ch] text-base/7 text-pretty text-muted dark:text-mist">
+                  Yes. Each account keeps its own sign-in in its own config directory, and they run side by side: one terminal on work, another on
+                  personal. Everything else is shared from one ~/.claude.
+                </dd>
+              </div>
+              <div class="lg:pr-12">
+                <dt class="text-lg/7 font-semibold tracking-tight">How do I see my Claude Code usage?</dt>
+                <dd class="mt-2 max-w-[56ch] text-base/7 text-pretty text-muted dark:text-mist">
+                  The menu bar shows each account's 5-hour window, its 7-day window and the weekly limit of one model. The numbers come from what
+                  Claude Code itself stores, so an account shows them once a session has run on it.
+                </dd>
+              </div>
+              <div class="lg:pr-12">
+                <dt class="text-lg/7 font-semibold tracking-tight">What happens when an account hits its usage limit?</dt>
+                <dd class="mt-2 max-w-[56ch] text-base/7 text-pretty text-muted dark:text-mist">
+                  Clauset posts a notification that names the account and when its limit resets. You can then move the running session to another
+                  account. Clauset never switches accounts by itself.
+                </dd>
+              </div>
+              <div class="lg:pr-12">
+                <dt class="text-lg/7 font-semibold tracking-tight">Does it keep limits separate per account, or only switch logins?</dt>
+                <dd class="mt-2 max-w-[56ch] text-base/7 text-pretty text-muted dark:text-mist">
+                  Both. Every account keeps its own sign-in and its own limits, and Clauset shows each account's usage beside the others. Switching
+                  moves a session to another account and leaves every sign-in in place.
+                </dd>
+              </div>
+              <div class="lg:pr-12">
+                <dt class="text-lg/7 font-semibold tracking-tight">Does Clauset read my tokens or send data anywhere?</dt>
+                <dd class="mt-2 max-w-[56ch] text-base/7 text-pretty text-muted dark:text-mist">
+                  It reads no token, and the command makes no network call. Only the official claude binary talks to Anthropic. The app asks before
+                  it goes online, then checks GitHub for a newer version once a week.
+                </dd>
+              </div>
+              <div class="lg:pr-12">
+                <dt class="text-lg/7 font-semibold tracking-tight">Is Clauset free?</dt>
+                <dd class="mt-2 max-w-[56ch] text-base/7 text-pretty text-muted dark:text-mist">
+                  Yes. Clauset is free and open source under the MIT licence. It needs macOS 14.4 or later and Claude Code.
+                </dd>
+              </div>
+            </dl>
           </div>
         </section>
 
