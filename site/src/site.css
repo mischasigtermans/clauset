@@ -1,0 +1,662 @@
+@import "tailwindcss";
+
+@source "../public";
+@source "../build.mjs";
+
+@theme {
+  --font-sans: ui-sans-serif, system-ui, -apple-system, "SF Pro Text", "Helvetica Neue", sans-serif;
+  --font-mono: ui-monospace, "SF Mono", Menlo, monospace;
+
+  /* The colours of the app's icon and of its README header. */
+  --color-page: #f4f5fa;
+  --color-night: #0d1017;
+  --color-ink: #14161f;
+  --color-fog: #f2f3f7;
+  --color-muted: #5d6275;
+  --color-mist: #9aa0b4;
+  --color-raise: #151822;
+  --color-brand: #4a4fd9;
+  --color-sky: #3db8ff;
+
+  --ease-enter: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-move: cubic-bezier(0.77, 0, 0.175, 1);
+}
+
+/* A card: a ring that does a border's job, a little lift and ambient depth.
+   On a dark page the depth layers vanish, so one light ring is left. */
+@utility card {
+  border-radius: var(--radius-3xl);
+  background: #fff;
+  box-shadow:
+    0 0 0 1px rgb(0 0 0 / 0.06),
+    0 1px 2px -1px rgb(0 0 0 / 0.06),
+    0 2px 4px 0 rgb(0 0 0 / 0.04);
+  @variant dark {
+    background: var(--color-raise);
+    box-shadow: 0 0 0 1px rgb(255 255 255 / 0.08);
+  }
+}
+
+/* A window of the app, drawn square: the corners and the shadow macOS adds. */
+@utility window {
+  border-radius: min(5.6vw, 26px);
+  outline: 1px solid rgb(0 0 0 / 0.1);
+  outline-offset: -1px;
+  box-shadow:
+    0 30px 60px -20px rgb(10 12 30 / 0.3),
+    0 12px 24px -12px rgb(10 12 30 / 0.2);
+  @variant dark {
+    outline-color: rgb(255 255 255 / 0.1);
+    box-shadow: 0 30px 60px -20px rgb(0 0 0 / 0.6);
+  }
+}
+
+@utility pressable {
+  transition: transform 150ms ease-out;
+  &:active {
+    transform: scale(0.96);
+  }
+}
+
+@layer components {
+  /* macOS, as the app's menu and its notifications look. Sizes are the
+     system's own, in px: these are pictures of an interface, not page copy. */
+  .mac {
+    --mac-ink: #14161f;
+    --mac-muted: #5d6275;
+    --mac-bar: rgb(255 255 255 / 0.62);
+    --mac-menu: rgb(250 250 252 / 0.8);
+    --mac-line: rgb(0 0 0 / 0.08);
+    --mac-track: rgb(0 0 0 / 0.1);
+    --mac-shadow: 0 24px 60px rgb(10 12 30 / 0.22), 0 2px 8px rgb(10 12 30 / 0.1);
+    color: var(--mac-ink);
+    font-size: 14.5px;
+    line-height: 1.3;
+    text-align: left;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    .mac {
+      --mac-ink: #f2f3f7;
+      --mac-muted: #9aa0b4;
+      --mac-bar: rgb(40 42 52 / 0.6);
+      --mac-menu: rgb(38 40 50 / 0.78);
+      --mac-line: rgb(255 255 255 / 0.09);
+      --mac-track: rgb(255 255 255 / 0.14);
+      --mac-shadow: 0 24px 60px rgb(0 0 0 / 0.5), 0 0 0 1px rgb(255 255 255 / 0.06);
+    }
+  }
+
+  .mac-bar {
+    display: flex;
+    height: 34px;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 22px;
+    padding-right: 22px;
+    border-bottom: 1px solid var(--mac-line);
+    background: var(--mac-bar);
+    backdrop-filter: saturate(160%) blur(20px);
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .mac-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 3px 9px;
+    border-radius: 7px;
+    background: rgb(128 128 140 / 0.22);
+  }
+
+  .mac-menu {
+    padding: 6px;
+    border: 1px solid var(--mac-line);
+    border-radius: 14px;
+    background: var(--mac-menu);
+    box-shadow: var(--mac-shadow);
+    backdrop-filter: saturate(160%) blur(30px);
+  }
+
+  .mac-head {
+    padding: 6px 12px 4px;
+    color: var(--mac-muted);
+    font-size: 12px;
+    font-weight: 600;
+  }
+
+  .mac-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 10px;
+    border-radius: 9px;
+  }
+
+  .mac-check {
+    width: 12px;
+    font-size: 13px;
+    font-weight: 700;
+  }
+
+  .mac-name {
+    font-weight: 500;
+  }
+
+  .mac-sub {
+    margin-top: 1px;
+    color: var(--mac-muted);
+    font-size: 12.5px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .mac-sep {
+    height: 1px;
+    margin: 5px 10px;
+    background: var(--mac-line);
+  }
+
+  .mac-plain {
+    display: flex;
+    justify-content: space-between;
+    padding: 5px 10px 5px 32px;
+  }
+
+  .mac-plain span {
+    color: var(--mac-muted);
+  }
+
+  /* The meter: a bar per limit. The fill is a full-width bar cut back to
+     its percentage, so the cut animates without touching layout. */
+  .meter {
+    display: flex;
+    width: 40px;
+    height: 18px;
+    flex: none;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+
+  .meter i {
+    display: block;
+    height: 4px;
+    overflow: hidden;
+    border-radius: 2px;
+    background: var(--mac-track);
+  }
+
+  .meter-wide {
+    width: 100%;
+    height: auto;
+    gap: 7px;
+  }
+
+  .meter-wide i {
+    height: 6px;
+    border-radius: 3px;
+  }
+
+  .meter-bar {
+    position: relative;
+    width: 30px;
+    height: 16px;
+    flex: none;
+  }
+
+  .meter-bar i {
+    position: absolute;
+    right: 0;
+    left: 0;
+    overflow: hidden;
+    border-radius: 9px;
+    background: var(--mac-track);
+  }
+
+  .meter b,
+  .meter-bar b {
+    display: block;
+    height: 100%;
+    border-radius: inherit;
+    background: #0a84ff;
+    clip-path: inset(0 calc(100% - var(--p)) 0 0 round 9px);
+  }
+
+  .meter-bar b {
+    background: var(--mac-ink);
+  }
+
+  .meter b.warn {
+    background: #ff9f0a;
+  }
+
+  .meter b.full {
+    background: #ff453a;
+  }
+
+  /* A notification, as macOS sets one: the app's icon, its name, the text. */
+  .note {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    padding: 11px 13px;
+    border: 1px solid var(--mac-line);
+    border-radius: 20px;
+    background: var(--mac-menu);
+    box-shadow: 0 10px 30px -10px rgb(10 12 30 / 0.25);
+    backdrop-filter: saturate(160%) blur(30px);
+    font-size: 13px;
+  }
+
+  .note img {
+    width: 36px;
+    height: 36px;
+    flex: none;
+  }
+
+  .note-title {
+    display: flex;
+    justify-content: space-between;
+    font-weight: 600;
+  }
+
+  .note-title span {
+    color: var(--mac-muted);
+    font-size: 12px;
+    font-weight: 400;
+  }
+
+  /* The stack: the newest in front, the older ones a step behind it. Each
+     arrival is a transition, so one that lands mid-move retargets. */
+  .stack {
+    position: relative;
+    height: 100px;
+  }
+
+  .stack .note {
+    position: absolute;
+    inset: 0 0 auto;
+    height: 78px;
+    --at: 0;
+    transform: translateY(calc(var(--at) * 10px)) scale(calc(1 - var(--at) * 0.05));
+    transform-origin: 50% 100%;
+    opacity: calc(1 - var(--at) * 0.1);
+    z-index: calc(10 - var(--at));
+    transition:
+      transform 400ms ease,
+      opacity 400ms ease;
+  }
+
+  /* Leaving is shorter and softer than arriving. */
+  .stack[data-leaving] .note {
+    transform: translateY(-12px);
+    opacity: 0;
+    transition:
+      transform 150ms ease-out,
+      opacity 150ms ease-out;
+  }
+
+  [data-move] {
+    transition: opacity 200ms ease;
+  }
+
+  .mac-row[data-chosen] {
+    background: #2f6bf0;
+    color: #fff;
+  }
+
+  /* Only the front one shows what it says, as in a macOS stack. */
+  .stack .note > * {
+    opacity: calc(1 - var(--at));
+    transition: opacity 400ms ease;
+  }
+
+  /* A limit as a labelled bar: the label and the number over the bar on a
+     phone, beside it from a tablet up. */
+  .gauge {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    gap: 6px 8px;
+  }
+
+  .gauge .meter {
+    grid-row: 2;
+    grid-column: 1 / -1;
+  }
+
+  @media (width >= 40rem) {
+    .gauge {
+      grid-template-columns: auto 1fr auto;
+    }
+
+    .gauge .meter {
+      grid-row: 1;
+      grid-column: 2;
+    }
+  }
+
+  .js .stack .note[data-waiting] {
+    transform: translateY(-70%) scale(0.96);
+    opacity: 0;
+  }
+
+  /* A terminal window. */
+  .term {
+    overflow: hidden;
+    border-radius: 12px;
+    background: rgb(22 24 33 / 0.92);
+    box-shadow:
+      0 24px 60px rgb(10 12 30 / 0.35),
+      0 0 0 1px rgb(255 255 255 / 0.08);
+    backdrop-filter: blur(20px);
+    color: #d6d9e4;
+    font-family: var(--font-mono);
+    font-size: 12.5px;
+    line-height: 1.55;
+    text-align: left;
+  }
+
+  .term-bar {
+    display: flex;
+    gap: 7px;
+    padding: 12px 14px 4px;
+  }
+
+  .term-bar i {
+    width: 11px;
+    height: 11px;
+    border-radius: 50%;
+    background: rgb(255 255 255 / 0.16);
+  }
+
+  .term pre {
+    overflow-x: auto;
+    padding: 8px 16px 16px;
+    font: inherit;
+  }
+
+  .term .dim {
+    color: #7d8399;
+  }
+
+  .term .blue {
+    color: #5fb4ff;
+  }
+
+  .term .amber {
+    color: #ffb340;
+  }
+
+  /* A session, in the picture of a move. */
+  .chip {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 6px 10px;
+    border-radius: 9px;
+    background: var(--mac-track);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    white-space: nowrap;
+  }
+
+  .chip::before {
+    width: 6px;
+    height: 6px;
+    flex: none;
+    border-radius: 50%;
+    background: #30d158;
+    content: "";
+  }
+}
+
+/* The changelog and the documentation: markdown from the repository, set
+   as a page. Text keeps a reading width; tables may run wider and scroll. */
+@layer components {
+  .prose {
+    font-size: 1rem;
+    line-height: 1.75;
+  }
+
+  .prose > :where(h1, h2, h3, h4, p, ul, ol, pre) {
+    max-width: 72ch;
+  }
+
+  .prose h1 {
+    font-size: var(--text-5xl);
+    font-weight: 600;
+    line-height: 1.1;
+    letter-spacing: -0.025em;
+    text-wrap: balance;
+  }
+
+  .prose h2 {
+    margin-top: 3.5rem;
+    padding-top: 2rem;
+    border-top: 1px solid rgb(20 22 31 / 0.1);
+    font-size: var(--text-2xl);
+    font-weight: 600;
+    line-height: 1.25;
+    letter-spacing: -0.02em;
+    scroll-margin-top: 5rem;
+    text-wrap: balance;
+  }
+
+  .prose h3,
+  .prose h4 {
+    margin-top: 2rem;
+    font-weight: 600;
+    scroll-margin-top: 5rem;
+  }
+
+  .prose :where(p, ul, ol, pre, .table-scroll) {
+    margin-top: 1.25rem;
+  }
+
+  .prose :where(p, li) {
+    color: var(--color-muted);
+    text-wrap: pretty;
+  }
+
+  .prose strong {
+    color: var(--color-ink);
+    font-weight: 600;
+  }
+
+  .prose ul {
+    padding-left: 1.25rem;
+    list-style: disc;
+  }
+
+  .prose ol {
+    padding-left: 1.25rem;
+    list-style: decimal;
+  }
+
+  .prose li + li {
+    margin-top: 0.5rem;
+  }
+
+  .prose a {
+    color: var(--color-brand);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
+  .prose code {
+    padding: 0.125rem 0.375rem;
+    border-radius: 0.375rem;
+    background: rgb(20 22 31 / 0.06);
+    color: var(--color-ink);
+    font-family: var(--font-mono);
+    font-size: 0.875em;
+  }
+
+  .prose pre {
+    overflow-x: auto;
+    padding: 1rem 1.25rem;
+    border-radius: 0.75rem;
+    background: #161821;
+    color: #d6d9e4;
+    font-size: 0.875rem;
+    line-height: 1.6;
+  }
+
+  .prose pre code {
+    padding: 0;
+    background: none;
+    color: inherit;
+    font-size: inherit;
+  }
+
+  .prose .table-scroll {
+    overflow-x: auto;
+  }
+
+  .prose table {
+    width: 100%;
+    min-width: 40rem;
+    border-collapse: collapse;
+    text-align: left;
+    font-size: 0.875rem;
+    line-height: 1.6;
+  }
+
+  .prose :where(th, td) {
+    padding: 0.75rem 1rem 0.75rem 0;
+    border-bottom: 1px solid rgb(20 22 31 / 0.1);
+    vertical-align: top;
+  }
+
+  .prose th {
+    font-weight: 600;
+  }
+
+  .prose td {
+    color: var(--color-muted);
+  }
+
+  .prose tr:last-child td {
+    border-bottom: 0;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    .prose h2,
+    .prose :where(th, td) {
+      border-color: rgb(255 255 255 / 0.1);
+    }
+
+    .prose :where(p, li, td) {
+      color: var(--color-mist);
+    }
+
+    .prose strong,
+    .prose code {
+      color: var(--color-fog);
+    }
+
+    .prose code {
+      background: rgb(255 255 255 / 0.08);
+    }
+
+    .prose a {
+      color: var(--color-sky);
+    }
+
+    .prose pre {
+      background: var(--color-raise);
+      box-shadow: 0 0 0 1px rgb(255 255 255 / 0.08);
+    }
+  }
+}
+
+/* Entrances. The hero's play on load, in groups 100ms apart. What lies
+   further down waits for the scroll, and only once scripts run: without
+   them everything is simply there. */
+@keyframes rise-in {
+  from {
+    transform: translateY(10px);
+    opacity: 0;
+    filter: blur(4px);
+  }
+}
+
+@layer components {
+  .rise {
+    animation: rise-in 400ms ease-out backwards;
+    animation-delay: calc(var(--i, 0) * 100ms);
+  }
+
+  .js .reveal {
+    transform: translateY(10px);
+    opacity: 0;
+    filter: blur(4px);
+    transition:
+      transform 400ms ease-out,
+      opacity 400ms ease-out,
+      filter 400ms ease-out;
+    transition-delay: calc(var(--i, 0) * 100ms);
+  }
+
+  .js .reveal[data-seen] {
+    transform: none;
+    opacity: 1;
+    filter: none;
+  }
+
+  .js .fills b {
+    clip-path: inset(0 100% 0 0 round 9px);
+    transition: clip-path 700ms var(--ease-enter);
+    transition-delay: calc(200ms + var(--n, 0) * 60ms);
+  }
+
+  .js .fills[data-seen] b {
+    clip-path: inset(0 calc(100% - var(--p)) 0 0 round 9px);
+  }
+
+  .moving {
+    transition: transform 600ms var(--ease-move);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rise {
+    animation: none;
+  }
+
+  .js .reveal {
+    transform: none;
+    filter: none;
+    transition: opacity 200ms ease;
+    transition-delay: 0ms;
+  }
+
+  .js .fills b,
+  .stack .note,
+  .moving,
+  .pressable {
+    transition: none;
+  }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .mac {
+    --mac-bar: #fff;
+    --mac-menu: #fafafc;
+  }
+
+  .mac-bar,
+  .mac-menu,
+  .note,
+  .term {
+    backdrop-filter: none;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    .mac {
+      --mac-bar: #282a34;
+      --mac-menu: #262832;
+    }
+  }
+}

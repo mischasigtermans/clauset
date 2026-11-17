@@ -1,4 +1,6 @@
 /target/
+/macos/build/
+/site/node_modules/
 
 # Cargo.lock is committed: clauset ships a binary.
 

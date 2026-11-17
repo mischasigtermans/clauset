@@ -1,0 +1,249 @@
+<!doctype html>
+<html lang="en" class="scroll-smooth antialiased motion-reduce:scroll-auto">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
+    <title>Documentation | Clauset</title>
+    <meta name="description" content="The config file, how an account is picked, what's shared and what clauset writes." />
+    <link rel="canonical" href="https://clauset.app/docs/" />
+    <link rel="icon" href="../img/favicon.png" />
+    <link rel="stylesheet" href="../assets/site.css" />
+  </head>
+  <body class="bg-page text-ink dark:bg-night dark:text-fog">
+    <div class="isolate">
+      <header class="sticky top-0 z-20 bg-page/70 backdrop-blur-xl backdrop-saturate-150 dark:bg-night/70">
+        <div class="mx-auto flex max-w-6xl items-center px-6 py-3 lg:px-8">
+          <div class="flex flex-1 items-center">
+            <a href="../" aria-label="Homepage" class="flex items-center gap-2.5">
+              <img src="../img/icon.png" alt="" class="size-7" />
+              <span class="text-base font-semibold tracking-tight">Clauset</span>
+            </a>
+          </div>
+          <nav aria-label="Sections" class="flex items-center gap-8 max-md:hidden">
+            <a href="../#features" class="text-sm/6 font-medium text-muted hover:text-ink dark:text-mist dark:hover:text-fog">Features</a>
+            <a href="../#app" class="text-sm/6 font-medium text-muted hover:text-ink dark:text-mist dark:hover:text-fog">The app</a>
+            <a href="../#command-line" class="text-sm/6 font-medium text-muted hover:text-ink dark:text-mist dark:hover:text-fog">Command line</a>
+          </nav>
+          <div class="flex flex-1 items-center justify-end gap-6">
+            <a
+              href="https://github.com/mischasigtermans/clauset"
+              target="_blank"
+              rel="noopener"
+              class="text-base/6 font-medium text-muted hover:text-ink max-sm:hidden sm:text-sm/6 dark:text-mist dark:hover:text-fog"
+              >GitHub</a
+            >
+            <a
+              href="https://github.com/mischasigtermans/clauset/releases/latest/download/Clauset.dmg"
+              class="pressable relative rounded-full bg-ink/6 px-3.5 py-1.5 text-base/6 font-medium text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand sm:text-sm/6 dark:bg-white/10 dark:text-fog"
+            >
+              <span class="absolute top-1/2 left-1/2 size-[max(100%,3rem)] -translate-1/2 pointer-fine:hidden" aria-hidden="true"></span>
+              Download
+            </a>
+          </div>
+        </div>
+      </header>
+      <main class="py-16 sm:py-24">
+        <div class="mx-auto max-w-6xl px-6 lg:px-8">
+          <article class="prose">
+<h1 id="configuration">Configuration</h1>
+<p><code>~/.claude/clauset/config.toml</code>, or the file <code>CLAUSET_CONFIG</code> names. Paths may start with <code>~/</code>. <code>clauset setup</code>, <code>add</code>, <code>remove</code>, <code>use</code>, <code>warn</code>, <code>chrome</code> and <code>switch</code> write it, keeping its comments, and refuse a change that would leave it invalid. What clauset records (usage, MCP server files, move requests), the shim&#39;s <code>bin/</code> and the menu bar app&#39;s <code>app.pid</code> sit in the same directory, which <code>link</code> leaves out of the accounts.</p>
+<p><code>clauset remove &lt;account&gt;</code> takes an account out of the file and drops its recorded usage. Its config directory and Keychain item stay, so <code>clauset add &lt;account&gt; --dir &lt;dir&gt;</code> takes it back. It refuses the default, the <code>chrome</code> account, the hub and an account sessions run on.</p>
+<h2 id="keys">Keys</h2>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Key</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>default</code></td>
+<td>The account a session started from no clauset session runs on. <code>clauset switch</code> and <code>clauset use &lt;account&gt;</code> set it.</td>
+</tr>
+<tr>
+<td><code>warn_at</code></td>
+<td>Optional. The percent of a 5-hour or 7-day limit at which every account warns. <code>clauset warn 80</code> sets it.</td>
+</tr>
+<tr>
+<td><code>chrome</code></td>
+<td>Optional. The account the Claude in Chrome extension is signed in to. Every other account reaches the browser through it. <code>clauset chrome &lt;name&gt;</code> sets it, <code>clauset chrome off</code> removes it.</td>
+</tr>
+<tr>
+<td><code>[accounts.&lt;name&gt;] dir</code></td>
+<td>The account&#39;s config directory. <code>~/.claude</code> is the hub, which runs with <code>CLAUDE_CONFIG_DIR</code> unset, as Claude Code expects of its default directory.</td>
+</tr>
+<tr>
+<td><code>[accounts.&lt;name&gt;] email</code></td>
+<td>Optional. Prefilled at <code>clauset login</code>, checked by <code>doctor</code>.</td>
+</tr>
+<tr>
+<td><code>[accounts.&lt;name&gt;] warn_at</code></td>
+<td>Optional. This account&#39;s own threshold, over the global one. <code>clauset warn 60 --account &lt;name&gt;</code> sets it.</td>
+</tr>
+<tr>
+<td><code>[accounts.&lt;name&gt;] org</code></td>
+<td>Optional. The organization UUID the sign-in must belong to, checked by <code>login</code> and <code>doctor</code>. One login can belong to several organizations, picked in the browser.</td>
+</tr>
+</tbody></table></div>
+<h2 id="which-account-claude-starts-on">Which account <code>claude</code> starts on</h2>
+<ol>
+<li><code>CLAUDE_CONFIG_DIR</code> names a directory no account owns: <code>claude</code> starts unchanged.</li>
+<li>The process descends from a session clauset started (<code>CLAUSET_ACCOUNT</code> is set), or <code>CLAUDE_CONFIG_DIR</code> names an account: that session&#39;s account.</li>
+<li>The default.</li>
+</ol>
+<p><code>clauset which</code> prints the answer and the rule that gave it.</p>
+<h2 id="what-an-account-shares">What an account shares</h2>
+<p>Everything in the hub except what Claude Code keeps per account or org: <code>.claude.json</code> and its backups, the Keychain item, policy limits, remote settings, <code>daemon*</code>, <code>state/</code>, <code>chrome/</code>, <code>cache/</code>, <code>telemetry/</code>, <code>statsig/</code>, <code>feedback/</code>, <code>stats-cache.json</code> and a few more, listed in <code>src/link.rs</code>. <code>plugins/</code> stays apart too, because <code>CLAUDE_CODE_PLUGIN_CACHE_DIR</code> points every account at the hub&#39;s, while Claude Code writes the plugins it syncs from claude.ai to <code>plugins/synced/&lt;org&gt;_&lt;account&gt;/</code> in each account&#39;s directory.</p>
+<p>Shared on purpose: <code>projects/</code> (sessions and auto-memory), <code>history.jsonl</code> and <code>sessions/</code> (so <code>ListAgents</code> and <code>SendMessage</code> reach sessions on every account). A session started on one account resumes on another with <code>--resume &lt;id&gt;</code>.</p>
+<p>MCP servers come from the hub: its user-scope ones and the directory&#39;s project-scope ones, written to <code>~/.claude/clauset/mcp/</code> in the shape <code>--mcp-config</code> reads and passed to every account beside the hub. A start with <code>--strict-mcp-config</code> gets none of them: the flag asks Claude Code for the caller&#39;s own <code>--mcp-config</code> alone. <code>claude mcp add</code> in a session on such an account writes to that account&#39;s own <code>.claude.json</code>, so add servers from a session on the hub; <code>doctor</code> names user-scope servers only one account has.</p>
+<p>Claude in Chrome follows the <code>chrome</code> key. Claude Code reaches the browser extension through a relay that pairs a session only with extensions signed in to its own claude.ai account, so a session on another account finds no browser. With <code>chrome</code> set, clauset starts a session on every other account with <code>--no-chrome</code> and Claude Code&#39;s own Chrome server, <code>claude --claude-in-chrome-mcp</code>, run on the named account&#39;s sign-in from <code>~/.claude/clauset/mcp/chrome.json</code>. Claude Code keeps the name <code>claude-in-chrome</code> for its built-in server, so this one is called <code>chrome</code> and its tools <code>mcp__chrome__*</code>. The session still applies its own organization&#39;s Claude in Chrome policy. Claude Code keeps the preferred browser in the named account&#39;s <code>.claude.json</code>, so a browser picked with <code>select_browser</code> from any account holds for all of them. The named account itself, a config without <code>chrome</code>, and a start with <code>--chrome</code>, <code>--no-chrome</code> or <code>--strict-mcp-config</code> keep Claude Code&#39;s own handling.</p>
+<p><code>clauset link</code> links what the hub gained since; <code>doctor</code> reports a link Claude Code replaced with a file.</p>
+<p><code>clauset add &lt;name&gt; --dir &lt;dir&gt;</code> takes in a config dir that ran on its own. Signed in, it keeps its sign-in. A directory with files but no <code>.claude.json</code>, or one that holds your home directory, is refused before anything moves. Its own copies of shared directories move into the hub&#39;s wherever the hub has no entry of that name, so its sessions, memory and skills join the shared ones; what would clash, and its own copy of every shared file, stays in the directory as <code>&lt;name&gt;.before-clauset</code>.</p>
+<h2 id="what-setup-and-add-write">What <code>setup</code> and <code>add</code> write</h2>
+<p><code>setup</code> asks before each step and leaves a step out when its files are already in place. For a program, <code>clauset setup --json</code> says which of the shim, the hooks, the status line and the skills are in place, and <code>clauset setup --apply &lt;shim|hooks|statusline|skills&gt;</code> puts one in place without asking. It leaves a status line of your own alone, and writes over a skill that differs only with <code>--replace</code>.</p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Path</th>
+<th>Written by</th>
+<th>What</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>~/.claude/clauset/config.toml</code></td>
+<td><code>setup</code>, <code>add</code></td>
+<td>The accounts, the default and <code>warn_at</code>.</td>
+</tr>
+<tr>
+<td><code>~/.claude/clauset/bin/claude</code></td>
+<td><code>setup</code></td>
+<td>A link to the clauset binary: the shim.</td>
+</tr>
+<tr>
+<td><code>~/.zshrc</code> or <code>~/.bashrc</code></td>
+<td><code>setup</code></td>
+<td>Two lines at the end: a comment and <code>export PATH=&quot;&lt;home&gt;/.claude/clauset/bin:$PATH&quot;</code>, so the shim comes before every other <code>claude</code>. Another shell gets the line printed to add by hand.</td>
+</tr>
+<tr>
+<td><code>~/.claude/settings.json</code></td>
+<td><code>setup</code></td>
+<td>The <code>SessionStart</code> and <code>StopFailure</code> hooks below, and the <code>statusLine</code> when there&#39;s none. The file is written back whole, as JSON indented by two spaces, its keys in their order.</td>
+</tr>
+<tr>
+<td><code>~/.claude/skills/clauset/SKILL.md</code></td>
+<td><code>setup</code></td>
+<td>The <code>/clauset</code> skill, as shipped in <code>skills/clauset/SKILL.md</code>.</td>
+</tr>
+<tr>
+<td><code>~/.claude/skills/accounts/SKILL.md</code></td>
+<td><code>setup</code></td>
+<td>The <code>accounts</code> skill, as shipped in <code>skills/accounts/SKILL.md</code>.</td>
+</tr>
+<tr>
+<td><code>~/.claude-accounts/&lt;name&gt;/</code></td>
+<td><code>add</code>, <code>login</code></td>
+<td>A new account&#39;s config directory, with a link into the hub for every shared entry. <code>add --dir</code> uses the directory you name.</td>
+</tr>
+<tr>
+<td><code>.claude.json</code> of an account beside the hub</td>
+<td><code>add</code>, <code>login</code>, <code>link</code>, <code>switch</code></td>
+<td>Onboarding, theme, the one-time dialogs the hub has answered, and the trust of every project the hub trusts. Keys the account has keep their values.</td>
+</tr>
+<tr>
+<td><code>~/.claude/</code></td>
+<td><code>add --dir</code></td>
+<td>The entries the taken-in directory has and the hub lacks.</td>
+</tr>
+</tbody></table></div>
+<p>The Keychain item and the account&#39;s sign-in in its <code>.claude.json</code> come from <code>claude auth login</code>, which <code>add</code> and <code>login</code> start. Claude Code keeps one sign-in per config directory, so a new one changes the account under every session running there. For the hub, where a <code>claude</code> started outside clauset runs too, <code>login</code> therefore waits until no session runs on it.</p>
+<h2 id="moving-a-session">Moving a session</h2>
+<p>A Claude Code process keeps the config directory it started with, so a session moves to another account by ending and resuming there. At a terminal the shim and <code>clauset run</code> keep <code>claude</code> as a child under a supervisor, and <code>clauset switch &lt;account&gt;</code>, run inside the session as <code>/clauset switch &lt;account&gt;</code>, <code>! clauset switch &lt;account&gt;</code> or by Claude, asks that supervisor to move it. It also makes the account the default, so new sessions start there too.</p>
+<ol>
+<li>The session finishes its turn. Once Claude Code&#39;s session registry says it&#39;s idle and it runs no background shell, the supervisor ends it.</li>
+<li>The supervisor starts <code>claude --resume &lt;session id&gt;</code> on the other account in the same terminal, with the flags that shape the session (permissions, model, effort, agent, settings, system prompt, added directories, tools, name); its prompt and the flags that pick a session stay behind. An account beside the hub also gets the trust the first account gave the directory; the hub&#39;s <code>.claude.json</code> is left to the sessions that write it.</li>
+</ol>
+<p>Background shells would end with the session, so the move waits until they have stopped: a watcher that never ends holds it until it&#39;s stopped through <code>/tasks</code>. <code>clauset switch</code> to the account the session runs on cancels a move it asked for and makes that account the default. A refused switch, from a session without the supervisor, leaves the default as it was. Background agents and teammates run inside the session and end with it. The first turn on the other account reads the whole conversation again, without the thinking written under the other organization. A session that ends on its own before it moves stays ended.</p>
+<p><code>clauset switch &lt;account&gt; --all</code> moves every session on the account being left, not only the one it runs in: the account the enclosing session runs on, or the one <code>--from &lt;account&gt;</code> names, which a terminal outside a session needs. Each supervisor notes the account its <code>claude</code> runs on in <code>~/.claude/clauset/supervised/&lt;pid&gt;.json</code> and removes the note when <code>claude</code> ends, since macOS keeps a process&#39;s environment from other processes. <code>--all</code> writes the request of every session whose supervisor runs it on that account, and each moves as above, once its own turn ends and its background shells have stopped; the output names the busy ones and those that wait for a shell. It makes the account the default once, and only when at least one session will move. A second <code>--all</code> writes the same requests again, so a session waiting to move keeps its place and gets only the newest target. A terminal session without a supervisor note, from a supervisor older than this version among others, stays where it is: the output lists it with the <code>clauset run &lt;account&gt; --resume &lt;id&gt;</code> that moves it by hand, since clauset can&#39;t tell its account. Sessions that Claude Code started for an SDK or another tool are left out.</p>
+<p>MCP servers that sign in with OAuth, and the claude.ai connectors of an account&#39;s organization, keep their sign-in per account. On the account a session moves to they may need a sign-in through <code>/mcp</code>; clauset reads no token, so it can&#39;t tell beforehand.</p>
+<p>A session that runs without the supervisor, because stdin was no terminal or it started before clauset, moves by hand: end it and run <code>clauset run &lt;account&gt; --resume &lt;id&gt;</code>. <code>/login</code> inside a session signs in the config directory itself, so it changes the account of every session that runs on it.</p>
+<h2 id="skills">Skills</h2>
+<p><code>setup</code> writes two skills into the hub&#39;s <code>skills/</code>, so every account has them:</p>
+<ul>
+<li><code>clauset</code>: <code>/clauset &lt;args&gt;</code> runs clauset in the session. Its body holds the line <code>!`clauset $ARGUMENTS 2&gt;&amp;1 || true` </code>, which Claude Code runs itself before the model reads the skill, since its frontmatter has <code>allowed-tools: Bash(clauset:*)</code>. Its <code>disable-model-invocation: true</code> keeps the model from invoking it with arguments of its own. It finds <code>clauset</code> on PATH; when it&#39;s missing there, the skill tells you how to install it.</li>
+<li><code>accounts</code>: tells Claude which clauset commands it may run itself (<code>clauset</code>, <code>which</code>, <code>doctor</code>), which wait for your word, how to move a session, and how to install clauset when it&#39;s missing.</li>
+</ul>
+<p><code>doctor</code> warns about a missing skill and notes one that differs from the shipped one. <code>setup</code> writes a missing skill, and offers to replace one that differs, since you may have changed it on purpose.</p>
+<p>The install command both skills name is <code>cargo install --locked --git https://github.com/mischasigtermans/clauset</code>; the source is at <a href="https://github.com/mischasigtermans/clauset" target="_blank" rel="noopener">github.com/mischasigtermans/clauset</a>.</p>
+<h2 id="usage">Usage</h2>
+<p><code>clauset</code> shows each account&#39;s use of its 5-hour and 7-day limits from two places Claude Code fills itself, whichever is fresher:</p>
+<ul>
+<li><code>cachedUsageUtilization</code> in the account&#39;s <code>.claude.json</code>, written each time Claude Code fetches the account&#39;s usage.</li>
+<li>The <code>rate_limits</code> Claude Code hands a status line command, which <code>clauset statusline</code> keeps per account in <code>~/.claude/clauset/usage/</code>. Claude Code sends them for subscription plans, Team included.</li>
+</ul>
+<p>An account shows numbers once a session has run on it; the overview says how old they are. A window Claude Code leaves out is left out of the overview too: a plan without a 5-hour limit shows its 7-day bar alone. A bar is blue, yellow from 70% and red from 90%.</p>
+<p>A weekly limit that counts one model alone, such as Fable&#39;s, is only in <code>cachedUsageUtilization</code>: a status line gets no such limit. The overview shows it on the line under the bars with its own age, which is the time since Claude Code last fetched the account&#39;s usage, often a day or more.</p>
+<p>With <code>warn_at</code> set, <code>clauset statusline</code> puts up a macOS notification the first time a window passes it, once per window: after the reset it may warn again. The <code>StopFailure</code> hook adds one when an account hits its limit, with every other account&#39;s fullest window beside it. clauset never moves work to another account on a limit; the notification leaves that choice to you. Both notifications look at the 5-hour and 7-day windows alone: a model&#39;s own weekly limit is too old a number to warn on.</p>
+<p>The menu bar app writes its process id to <code>app.pid</code>. While that process runs, clauset hands a notification to the app as <code>clauset://notify?text=…</code> and it comes under the app&#39;s name. Without the app, or when it has no permission to notify, AppleScript puts it up.</p>
+<h2 id="hooks-and-status-line">Hooks and status line</h2>
+<p>In the hub&#39;s <code>settings.json</code>, shared by every account, with the path of the clauset binary <code>setup</code> ran from (<code>~/.cargo/bin/clauset</code> after <code>cargo install</code>):</p>
+<pre><code class="language-json">&quot;SessionStart&quot;: [{&quot;hooks&quot;: [{&quot;type&quot;: &quot;command&quot;, &quot;command&quot;: &quot;~/.cargo/bin/clauset hook context&quot;, &quot;timeout&quot;: 5}]}],
+&quot;StopFailure&quot;: [{&quot;matcher&quot;: &quot;rate_limit&quot;, &quot;hooks&quot;: [{&quot;type&quot;: &quot;command&quot;, &quot;command&quot;: &quot;~/.cargo/bin/clauset hook limit&quot;, &quot;timeout&quot;: 5}]}]
+</code></pre>
+<p><code>setup</code> gives a hook with another matcher, or one that runs a clauset installed elsewhere, the current one, and <code>doctor</code> reports it.</p>
+<p>A status line command pipes the JSON Claude Code hands it through <code>clauset statusline</code>, which prints the account and keeps its usage. When there&#39;s no status line, <code>setup</code> writes <code>&quot;statusLine&quot;: {&quot;type&quot;: &quot;command&quot;, &quot;command&quot;: &quot;~/.cargo/bin/clauset statusline&quot;}</code>, and offers to point one that runs another clauset&#39;s <code>statusline</code> at its own. Any other status line it leaves alone and names the pipe to add.</p>
+<h2 id="solo">Solo</h2>
+<p><a href="https://soloterm.com" target="_blank" rel="noopener">Solo</a> is a terminal app that starts agents from agent tools. One agent tool per account: command <code>~/.cargo/bin/clauset</code>, arguments <code>run &lt;account&gt; --dangerously-skip-permissions</code>, tool type <code>claude</code> set by hand so resume keeps working. The stock Claude Code tool starts on the default once the shim is on PATH.</p>
+<h2 id="undocumented-behaviour-clauset-relies-on">Undocumented behaviour clauset relies on</h2>
+<ul>
+<li>The Keychain item of a config directory is <code>Claude Code-credentials-</code> and the first 8 hex digits of the SHA-256 of its resolved path. <code>doctor</code> checks each one exists.</li>
+<li>Claude Code gives every process its tools start <code>CLAUDE_PID</code> and <code>CLAUDE_CODE_SESSION_ID</code>, keeps each interactive session&#39;s <code>status</code> (<code>busy</code>, <code>idle</code>) in <code>sessions/&lt;pid&gt;.json</code>, starts each Bash tool shell from <code>&lt;config dir&gt;/shell-snapshots/snapshot-*</code>, and ends a session cleanly on SIGTERM. <code>clauset switch</code> rests on all four.</li>
+<li>Each entry in <code>sessions/&lt;pid&gt;.json</code> holds the <code>sessionId</code>, <code>name</code>, <code>cwd</code> and <code>entrypoint</code> (<code>cli</code> for a terminal session) of a running session, and <code>procStart</code>, its process&#39;s start time as <code>ps -o lstart=</code> prints it in UTC; clauset accepts it in the C locale or the inherited one. <code>clauset switch --all</code> finds the sessions to move there and leaves out an entry whose pid now belongs to a process started at another time.</li>
+<li><code>.claude.json</code> keeps <code>cachedUsageUtilization</code>, and <code>oauthAccount.planDisplayName</code> for personal plans (<code>Ultra</code>); a Team organization has no display name.</li>
+<li>Claude in Chrome reaches the extension only through a relay keyed on the session&#39;s claude.ai account, and its server is <code>claude --claude-in-chrome-mcp</code>, a switch <code>claude --help</code> doesn&#39;t list. <code>--mcp-config</code> refuses a local server named <code>claude-in-chrome</code> and accepts one named <code>chrome</code>. The <code>chrome</code> key rests on all three. If an update drops the switch, <code>/mcp</code> lists the <code>chrome</code> server as failed. If it reserves <code>chrome</code> too, the server is left out with only a line in the debug log. Either way, sessions on accounts other than the one <code>chrome</code> names have no browser until they start with <code>--chrome</code> or the key is removed.</li>
+</ul>
+
+          </article>
+        </div>
+      </main>
+      <footer class="pb-16">
+        <div class="mx-auto max-w-6xl px-6 lg:px-8">
+          <div class="flex flex-col gap-8 border-t border-ink/10 pt-10 sm:flex-row sm:items-start sm:justify-between dark:border-white/10">
+            <div>
+              <a href="../" aria-label="Homepage" class="flex items-center gap-2.5">
+                <img src="../img/icon.png" alt="" class="size-6" />
+                <span class="text-base font-semibold tracking-tight">Clauset</span>
+              </a>
+              <p class="mt-4 max-w-[56ch] text-base/7 text-pretty text-muted sm:text-sm/6 dark:text-mist">
+                Clauset rests on behaviour Claude Code doesn't document, and is tested on Claude Code 2.1.322. It's an independent project, not
+                made or endorsed by Anthropic.
+              </p>
+            </div>
+            <ul role="list" class="flex flex-wrap gap-x-8 gap-y-3">
+              <li>
+                <a href="https://github.com/mischasigtermans/clauset" target="_blank" rel="noopener" class="text-base/7 text-muted hover:text-ink sm:text-sm/6 dark:text-mist dark:hover:text-fog">GitHub</a>
+              </li>
+              <li>
+                <a
+                  href="../changelog/"
+                  class="text-base/7 text-muted hover:text-ink sm:text-sm/6 dark:text-mist dark:hover:text-fog"
+                  >Changelog</a
+                >
+              </li>
+              <li>
+                <a
+                  href="../docs/"
+                  class="text-base/7 text-muted hover:text-ink sm:text-sm/6 dark:text-mist dark:hover:text-fog"
+                  >Documentation</a
+                >
+              </li>
+              <li>
+                <a href="https://mischa.sigtermans.me" target="_blank" rel="noopener" class="text-base/7 text-muted hover:text-ink sm:text-sm/6 dark:text-mist dark:hover:text-fog">Mischa Sigtermans</a>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </footer>
+    </div>
+  </body>
+</html>

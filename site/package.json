@@ -1,0 +1,14 @@
+{
+  "name": "clauset-site",
+  "private": true,
+  "scripts": {
+    "build": "node build.mjs && tailwindcss -i src/site.css -o public/assets/site.css --minify",
+    "dev": "tailwindcss -i src/site.css -o public/assets/site.css --watch"
+  },
+  "devDependencies": {
+    "@phosphor-icons/core": "^2.1.1",
+    "@tailwindcss/cli": "^4.1.0",
+    "marked": "^18.2.1",
+    "tailwindcss": "^4.1.0"
+  }
+}
