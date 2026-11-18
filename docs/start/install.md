@@ -28,11 +28,11 @@ Homebrew builds the latest release from source and brings its own Rust. Installi
 ## The CLI, with Cargo
 
 ```sh
-cargo install --locked --git https://github.com/mischasigtermans/clauset
+cargo install --locked clauset
 clauset setup
 ```
 
-`cargo install` builds Clauset from the repository and puts it in `~/.cargo/bin`, which has to be on PATH. rustup's installer puts it there. It needs Rust 1.88 or later, from [rustup](https://rustup.rs).
+`cargo install` builds Clauset from crates.io and puts it in `~/.cargo/bin`, which has to be on PATH. rustup's installer puts it there. It needs Rust 1.88 or later, from [rustup](https://rustup.rs).
 
 ## What it needs
 

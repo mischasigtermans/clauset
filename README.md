@@ -31,10 +31,10 @@ clauset setup
 
 Homebrew builds the latest release from source.
 
-Or with Cargo, from this repository:
+Or with Cargo:
 
 ```sh
-cargo install --locked --git https://github.com/mischasigtermans/clauset
+cargo install --locked clauset
 clauset setup
 ```
 
