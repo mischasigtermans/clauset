@@ -309,8 +309,10 @@
                 class="rise mt-6 flex flex-col items-center gap-x-3 gap-y-1.5 text-2xs text-muted [--i:4] sm:flex-row sm:justify-center sm:text-sm/6 dark:text-mist"
               >
                 <span class="flex items-center gap-x-3 whitespace-nowrap"
-                  ><span>Free and open source</span><span aria-hidden="true" class="text-ink/20 dark:text-white/20">|</span
-                  ><span>macOS 14.4 or later</span></span
+                  ><a href="changelog/#v{{version}}" class="relative font-medium text-ink underline underline-offset-4 dark:text-fog"
+                    ><span class="absolute top-1/2 left-1/2 size-[max(100%,3rem)] -translate-1/2 pointer-fine:hidden" aria-hidden="true"></span
+                    >Version {{version}}</a
+                  ><span aria-hidden="true" class="text-ink/20 dark:text-white/20">|</span><span>macOS 14.4 or later</span></span
                 ><span aria-hidden="true" class="text-ink/20 max-sm:hidden dark:text-white/20">|</span
                 ><span
                   >You can also
@@ -1175,6 +1177,12 @@
                     ><svg class="size-5 fill-current" aria-hidden="true"><use href="img/icons.svg#star" /></svg>Star Clauset on GitHub</a
                   >
                 </div>
+                <p class="mt-6 text-base/7 text-muted sm:text-sm/6 dark:text-mist">
+                  <a href="changelog/#v{{version}}" class="relative font-medium text-ink underline underline-offset-4 dark:text-fog"
+                    ><span class="absolute top-1/2 left-1/2 size-[max(100%,3rem)] -translate-1/2 pointer-fine:hidden" aria-hidden="true"></span
+                    >Version {{version}}</a
+                  >
+                </p>
               </div>
             </div>
           </div>

@@ -164,11 +164,12 @@ const versions = [...changelog.matchAll(/^## \[([^\]]+)\](?: - (\d{4}-\d{2}-\d{2
   date,
   id: name === "Unreleased" ? "unreleased" : `v${name}`,
 }));
+const latest = versions.find((version) => version.date);
 
 // The questions on the home page, repeated as structured data. Written into
 // the page between two markers, so what a crawler reads is what a visitor
 // reads.
-let index = read("src/index.html");
+let index = read("src/index.html").replaceAll("{{version}}", latest.name);
 const home = parse(index);
 const questions = home.querySelectorAll("[data-faq] > div").map((item) => ({
   "@type": "Question",
