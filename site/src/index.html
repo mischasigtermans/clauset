@@ -1163,22 +1163,22 @@
                 <p class="mt-4 max-w-[36ch] text-base/7 text-pretty text-muted sm:mt-6 sm:text-lg/8 dark:text-mist">
                   Clauset is free and open source. It needs macOS 14.4 or later and Claude Code, signed in to at least one account.
                 </p>
-                <div class="mt-10 flex flex-wrap items-center gap-x-8 gap-y-4">
+                <div class="mt-10 flex">
                   <a
                     href="https://github.com/mischasigtermans/clauset/releases/latest/download/Clauset.dmg"
                     class="inline-flex pressable items-center justify-center gap-2 rounded-full bg-brand py-3.5 pr-6 pl-4 text-base/6 font-medium text-white shadow-[0_10px_30px_-8px] shadow-brand/60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
                     ><svg class="size-5 fill-current" aria-hidden="true"><use href="img/icons.svg#download-simple" /></svg>Download for macOS</a
                   >
+                </div>
+                <p class="mt-6 flex flex-col items-start gap-x-3 gap-y-6 text-base/6 font-medium text-ink sm:flex-row sm:items-center dark:text-fog">
                   <a
                     href="https://github.com/mischasigtermans/clauset"
                     target="_blank"
                     rel="noopener"
-                    class="inline-flex items-center gap-2 text-base/6 font-medium text-ink underline-offset-4 hover:underline dark:text-fog"
-                    ><svg class="size-5 fill-current" aria-hidden="true"><use href="img/icons.svg#star" /></svg>Star Clauset on GitHub</a
-                  >
-                </div>
-                <p class="mt-6 text-base/7 text-muted sm:text-sm/6 dark:text-mist">
-                  <a href="changelog/#v{{version}}" class="relative font-medium text-ink underline underline-offset-4 dark:text-fog"
+                    class="inline-flex items-center gap-2 underline-offset-4 hover:underline"
+                    ><svg class="size-5 shrink-0 fill-current" aria-hidden="true"><use href="img/icons.svg#star" /></svg>Star Clauset on GitHub</a
+                  ><span aria-hidden="true" class="font-normal text-ink/20 max-sm:hidden dark:text-white/20">|</span
+                  ><a href="changelog/#v{{version}}" class="relative underline-offset-4 hover:underline"
                     ><span class="absolute top-1/2 left-1/2 size-[max(100%,3rem)] -translate-1/2 pointer-fine:hidden" aria-hidden="true"></span
                     >Version {{version}}</a
                   >
@@ -1191,47 +1191,52 @@
 
       <footer class="pb-16">
         <div class="mx-auto max-w-6xl px-6 lg:px-8">
-          <div class="flex flex-col gap-8 border-t border-ink/10 pt-10 sm:flex-row sm:items-start sm:justify-between dark:border-white/10">
-            <div>
-              <a href="./" aria-label="Homepage" class="flex items-center gap-2.5">
-                <img src="img/icon.png" alt="" class="size-6" />
-                <span class="text-base font-semibold tracking-tight">Clauset</span>
-              </a>
-              <p class="mt-4 max-w-[56ch] text-base/6 text-pretty text-muted sm:text-sm/6 dark:text-mist">
-                Clauset rests on behaviour Claude Code doesn't document, and is tested on Claude Code 2.1.322. It's an independent project, not made
-                or endorsed by Anthropic.
-              </p>
-              <p class="mt-4 text-base/6 text-muted sm:text-sm/6 dark:text-mist">
-                © 2026 Hold My Beer B.V. Made by
-                <a
-                  href="https://mischa.sigtermans.me"
-                  target="_blank"
-                  rel="noopener"
-                  class="font-medium text-ink underline underline-offset-4 dark:text-fog"
-                  >Mischa Sigtermans</a
-                >. <a href="privacy/" class="font-medium text-ink underline underline-offset-4 dark:text-fog">Privacy</a>.
-              </p>
+          <div class="border-t border-ink/10 pt-10 dark:border-white/10">
+            <div class="flex flex-col gap-8 lg:flex-row lg:items-start lg:justify-between">
+              <div>
+                <a href="./" aria-label="Homepage" class="flex items-center gap-2.5">
+                  <img src="img/icon.png" alt="" class="size-6" />
+                  <span class="text-base font-semibold tracking-tight">Clauset</span>
+                </a>
+                <p class="mt-4 max-w-[56ch] text-base/6 text-pretty text-muted sm:text-sm/6 dark:text-mist">
+                  Clauset rests on behaviour Claude Code doesn't document, and is tested on Claude Code 2.1.322. It's an independent project, not made
+                  or endorsed by Anthropic.
+                </p>
+              </div>
+              <ul role="list" class="flex flex-wrap gap-x-8 gap-y-3 lg:shrink-0">
+                <li>
+                  <a
+                    href="https://github.com/mischasigtermans/clauset"
+                    target="_blank"
+                    rel="noopener"
+                    class="text-base/7 text-muted hover:text-ink sm:text-sm/6 dark:text-mist dark:hover:text-fog"
+                    >GitHub</a
+                  >
+                </li>
+                <li>
+                  <a href="changelog/" class="text-base/7 text-muted hover:text-ink sm:text-sm/6 dark:text-mist dark:hover:text-fog">Changelog</a>
+                </li>
+                <li>
+                  <a href="docs/" class="text-base/7 text-muted hover:text-ink sm:text-sm/6 dark:text-mist dark:hover:text-fog">Documentation</a>
+                </li>
+                <li>
+                  <a href="licence/" class="text-base/7 text-muted hover:text-ink sm:text-sm/6 dark:text-mist dark:hover:text-fog">Licence</a>
+                </li>
+                <li>
+                  <a href="privacy/" class="text-base/7 text-muted hover:text-ink sm:text-sm/6 dark:text-mist dark:hover:text-fog">Privacy</a>
+                </li>
+              </ul>
             </div>
-            <ul role="list" class="flex flex-wrap gap-x-8 gap-y-3">
-              <li>
-                <a
-                  href="https://github.com/mischasigtermans/clauset"
-                  target="_blank"
-                  rel="noopener"
-                  class="text-base/7 text-muted hover:text-ink sm:text-sm/6 dark:text-mist dark:hover:text-fog"
-                  >GitHub</a
-                >
-              </li>
-              <li>
-                <a href="changelog/" class="text-base/7 text-muted hover:text-ink sm:text-sm/6 dark:text-mist dark:hover:text-fog">Changelog</a>
-              </li>
-              <li>
-                <a href="docs/" class="text-base/7 text-muted hover:text-ink sm:text-sm/6 dark:text-mist dark:hover:text-fog">Documentation</a>
-              </li>
-              <li>
-                <a href="licence/" class="text-base/7 text-muted hover:text-ink sm:text-sm/6 dark:text-mist dark:hover:text-fog">Licence</a>
-              </li>
-            </ul>
+            <p class="mt-8 text-xs/5 text-muted lg:mt-4 dark:text-mist">
+              © 2026 Hold My Beer B.V. Made by
+              <a
+                href="https://mischa.sigtermans.me"
+                target="_blank"
+                rel="noopener"
+                class="font-medium text-ink underline underline-offset-4 dark:text-fog"
+                >Mischa Sigtermans</a
+              >.
+            </p>
           </div>
         </div>
       </footer>
