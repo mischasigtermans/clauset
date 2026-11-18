@@ -2,12 +2,14 @@
   "name": "clauset-site",
   "private": true,
   "scripts": {
-    "build": "node build.mjs && tailwindcss -i src/site.css -o public/assets/site.css --minify",
+    "build": "mkdir -p public && find public -mindepth 1 -delete && tailwindcss -i src/site.css -o public/assets/site.css --minify && node build.mjs",
     "dev": "tailwindcss -i src/site.css -o public/assets/site.css --watch"
   },
   "devDependencies": {
+    "@alpinejs/persist": "^3.17.5",
     "@phosphor-icons/core": "^2.1.1",
     "@tailwindcss/cli": "^4.1.0",
+    "alpinejs": "^3.17.5",
     "marked": "^18.2.1",
     "node-html-parser": "^9.0.7",
     "tailwindcss": "^4.1.0"
