@@ -41,7 +41,7 @@ clauset setup
 
 ## Upgrade
 
-The app updates itself: it shows a newer version in its menu and installs it when you choose to. With Homebrew, `brew upgrade` does it; coming from 0.2.0, run `clauset setup` once after that upgrade. With Cargo, run the install command again. A Clauset installed somewhere else than before takes over the shim, the hooks and the status line once you run `clauset setup` from it.
+The app shows a newer version in its menu and installs it when you choose to. With Homebrew, run `brew upgrade`. Coming from 0.2.0, run `clauset setup` once after that upgrade. With Cargo, run the install command again. A Clauset installed somewhere else than before takes over the shim, the hooks and the status line once you run `clauset setup` from it.
 
 `clauset doctor` notes a skill that differs from the one this version ships, and `clauset setup` offers to replace it.
 
