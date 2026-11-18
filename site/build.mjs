@@ -459,6 +459,8 @@ const outside = (href) => (/^(https?:|mailto:)/.test(href) ? href : `${site}/${h
 function markdownOfHome() {
   // The parser keeps a `pre` as raw text unless told otherwise, markup and all.
   const main = parse(index, { blockTextElements: { script: true, style: true } }).querySelector("main");
+  // A bar between two things stays, as text: without it their words run together.
+  main.querySelectorAll('[aria-hidden="true"]').forEach((node) => node.text.trim() === "|" && node.replaceWith(" | "));
   main.querySelectorAll('[aria-hidden="true"], picture, img, svg').forEach((node) => node.remove());
   const words = (node) =>
     node.childNodes
