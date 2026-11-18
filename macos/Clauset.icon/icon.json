@@ -1,0 +1,21 @@
+{
+  "fill" : { "linear-gradient" : [ "display-p3:0.33,0.36,0.86,1.0", "display-p3:0.16,0.17,0.48,1.0" ] },
+  "groups" : [
+    { "name" : "Meter", "layers" : [
+        { "image-name" : "fill-5h.svg", "name" : "fill-5h" },
+        { "image-name" : "fill-7d.svg", "name" : "fill-7d" },
+        { "image-name" : "track-5h.svg", "name" : "track-5h", "opacity" : 0.12 },
+        { "image-name" : "track-7d.svg", "name" : "track-7d", "opacity" : 0.12 } ],
+      "shadow" : { "kind" : "layer-color", "opacity" : 0.4 },
+      "translucency" : { "enabled" : false, "value" : 0.5 } },
+    { "name" : "Front", "layers" : [ { "image-name" : "card-1.svg", "name" : "card-1" } ],
+      "shadow" : { "kind" : "neutral", "opacity" : 0.5 },
+      "translucency" : { "enabled" : true, "value" : 0.15 } },
+    { "name" : "Behind", "layers" : [
+        { "image-name" : "card-2.svg", "name" : "card-2", "opacity" : 0.55 },
+        { "image-name" : "card-3.svg", "name" : "card-3", "opacity" : 0.3 } ],
+      "shadow" : { "kind" : "neutral", "opacity" : 0.3 },
+      "translucency" : { "enabled" : true, "value" : 0.5 } }
+  ],
+  "supported-platforms" : { "squares" : [ "macOS" ] }
+}

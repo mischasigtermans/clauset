@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>CFBundleExecutable</key>
+    <string>Clauset</string>
+    <key>CFBundleIconFile</key>
+    <string>Clauset</string>
+    <key>CFBundleIconName</key>
+    <string>Clauset</string>
+    <key>CFBundleIdentifier</key>
+    <string>me.sigtermans.clauset</string>
+    <key>CFBundleName</key>
+    <string>Clauset</string>
+    <key>CFBundlePackageType</key>
+    <string>APPL</string>
+    <key>NSHumanReadableCopyright</key>
+    <string>Copyright © 2026 Hold My Beer B.V.</string>
+    <key>LSMinimumSystemVersion</key>
+    <string>14.4</string>
+    <key>LSUIElement</key>
+    <true/>
+    <key>SUFeedURL</key>
+    <string>https://github.com/mischasigtermans/clauset/releases/latest/download/appcast.xml</string>
+    <key>SUPublicEDKey</key>
+    <string>78ukf53jKHUvpqB3nVV3G42Gcyy4B/9UsrzJOEa4miU=</string>
+    <key>SUEnableAutomaticChecks</key>
+    <false/>
+    <key>SUScheduledCheckInterval</key>
+    <integer>604800</integer>
+    <key>SUAllowsAutomaticUpdates</key>
+    <false/>
+</dict>
+</plist>
