@@ -1,11 +1,14 @@
 [package]
 name = "clauset"
-version = "0.2.0"
+version = "0.3.0"
 edition = "2024"
 rust-version = "1.88"
 description = "Several Claude Code accounts on one Mac, sharing one ~/.claude"
 repository = "https://github.com/mischasigtermans/clauset"
+homepage = "https://clauset.app"
 readme = "README.md"
+# The menu bar app and the site ship on their own; the crate is the CLI.
+exclude = ["/macos", "/site", "/.github"]
 keywords = ["claude", "claude-code", "accounts", "cli"]
 categories = ["command-line-utilities"]
 license = "MIT"

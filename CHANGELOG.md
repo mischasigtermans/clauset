@@ -1,5 +1,43 @@
 # Changelog
 
+## [0.3.0] - 2026-11-18
+
+Clauset gets a menu bar app, and `clauset switch` stops changing where new sessions start.
+
+**Breaking**
+
+- `clauset switch` moves sessions and leaves the default alone, with or without `--all`. It made the account it moved to the default. Now only `clauset use` sets where new sessions start, and a session that leaves the default account is told they still start there. Run `clauset use <account>` as well when new sessions should follow.
+
+**Added**
+
+- Clauset in `macos/`, a menu bar app that shows every account's usage, sets the default, the warning thresholds and `chrome`, and moves sessions between accounts. It reads and changes everything through `clauset`, which it carries inside it.
+- The app as `Clauset.dmg` on each release, and as the Homebrew cask `mischasigtermans/tap/clauset`, which also puts `clauset` on PATH. The formula `clauset-cli` stays for the CLI alone.
+- `clauset setup` links `clauset` beside the `claude` shim, so the CLI is on PATH wherever the shim is.
+- The menu bar app updates itself through Sparkle. It asks the first time it opens. With your yes it fetches its release feed from GitHub once a week, shows a newer version in the menu and installs it when you choose to. `clauset` itself still makes no network call.
+- While the menu bar app runs, notifications come through it, under its name.
+- `clauset status --json` gives every account with its sign-in, usage, warning threshold and number of supervised sessions, plus the default and `chrome`, for a program to read.
+- The overview shows an account's weekly limit per model, such as Fable's, with how old that number is: it comes from Claude Code's own cache alone.
+- `clauset setup --json` says what each setup step still needs, and `clauset setup --apply <shim|hooks|statusline|skills>` carries one out without asking. `--apply skills --replace` also writes this version's skill over one that differs.
+- Both JSON outputs carry `"version": 1`. A release that renames a field or changes its type raises that number.
+- `clauset chrome <account|off>` sets or removes the `chrome` key.
+- `clauset remove <account>` takes an account out of the config and leaves its directory and sign-in. It refuses the default, the `chrome` account, the hub and an account sessions run on.
+
+**Changed**
+
+- `clauset login` signs the hub in again once no session runs on it. It refused the hub outright, and left it to `claude auth login`.
+- The overview leaves out a window an account doesn't have, where it wrote `no 5h window`.
+- A usage bar is blue, yellow from 70% and red from 90%. It was green, yellow from 50% and red from 80%.
+- A notification names an account as the menu bar app shows it: `work-1` reads `Work 1`. It gave the name as the config has it.
+- `clauset add` refuses the name `off`, which `clauset chrome off` and `clauset warn off` read as a word of their own.
+
+**Fixed**
+
+- `clauset setup` writes the path `clauset` was started from into the shim, the hooks and the status line. It wrote the file behind that path, which for a Homebrew install lies in a folder the next `brew upgrade` deletes: the shim, the hooks and the status line then pointed at nothing.
+
+**Migration**
+
+Installed 0.2.0 with Homebrew: run `clauset setup` once after `brew upgrade`, to point the shim, the hooks and the status line at a path that lasts.
+
 ## [0.2.0] - 2026-11-16
 
 **Added**
