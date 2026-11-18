@@ -123,7 +123,13 @@ function frontMatter(path) {
   const meta = Object.fromEntries(
     head.split("\n").map((line) => {
       const at = line.indexOf(":");
-      return [line.slice(0, at).trim(), line.slice(at + 1).trim().replace(/^"(.*)"$/, "$1")];
+      return [
+        line.slice(0, at).trim(),
+        line
+          .slice(at + 1)
+          .trim()
+          .replace(/^"(.*)"$/, "$1"),
+      ];
     }),
   );
   return { path, body: body.trim(), title: meta.title, description: meta.description, order: Number(meta.order) };
@@ -176,10 +182,7 @@ index = index.replace(
 );
 // Alpine and its persist plugin, as one file the site serves itself. The
 // plugin comes first: it has to be there when Alpine starts.
-write(
-  "public/assets/alpine.js",
-  `${read("node_modules/@alpinejs/persist/dist/cdn.min.js")}\n${read("node_modules/alpinejs/dist/cdn.min.js")}\n`,
-);
+write("public/assets/alpine.js", `${read("node_modules/@alpinejs/persist/dist/cdn.min.js")}\n${read("node_modules/alpinejs/dist/cdn.min.js")}\n`);
 
 // The sheet, the scripts and the sprite get their contents' hash on their
 // address, so a browser never pairs a new page with one it kept from before.
@@ -201,6 +204,7 @@ const rooted = (part) =>
     .replaceAll('href="#', 'href="/#')
     .replaceAll('href="changelog/"', 'href="/changelog/"')
     .replaceAll('href="licence/"', 'href="/licence/"')
+    .replaceAll('href="privacy/"', 'href="/privacy/"')
     .replaceAll('href="docs/"', 'href="/docs/"');
 const header = rooted(index.match(/<header[\s\S]*?<\/header>/)[0]);
 const footer = rooted(index.match(/<footer[\s\S]*?<\/footer>/)[0]);
@@ -406,8 +410,13 @@ ${html(changelog, "CHANGELOG.md").replace(/<h2 id="[^"]*">\[([^\]]+)\](?: - (\d{
 markdown[releases.path] = absolute(read("../CHANGELOG.md"), "CHANGELOG.md");
 
 const licence = { path: "licence/", title: "Licence", description: "Clauset is free and open source under the MIT licence." };
-const terms = read("../LICENSE").replace(/^MIT License\n+/, "").replace("(c)", "©").trim();
-const credits = read("../README.md").match(/^## Credits\n+([\s\S]*?)(?=^## )/m)[1].trim();
+const terms = read("../LICENSE")
+  .replace(/^MIT License\n+/, "")
+  .replace("(c)", "©")
+  .trim();
+const credits = read("../README.md")
+  .match(/^## Credits\n+([\s\S]*?)(?=^## )/m)[1]
+  .trim();
 pages.push(licence);
 write(
   "public/licence/index.html",
@@ -425,6 +434,24 @@ ${html(credits, "README.md")}
   ),
 );
 markdown[licence.path] = `# ${licence.title}\n\n${licence.description}\n\n${terms}\n\n## Credits\n\n${absolute(credits, "README.md")}\n`;
+
+const [, statement, policy] = read("../PRIVACY.md").match(/^# .*\n+(.*)\n+([\s\S]*)$/);
+const privacy = { path: "privacy/", title: "Privacy", description: statement };
+pages.push(privacy);
+write(
+  "public/privacy/index.html",
+  shell(
+    privacy,
+    `<main class="py-10 sm:py-16">
+        <div class="mx-auto max-w-6xl px-6 lg:px-8">${heading(privacy.title, privacy.description)}
+            <article class="prose mt-10">
+${html(policy, "PRIVACY.md")}
+            </article>
+        </div>
+      </main>`,
+  ),
+);
+markdown[privacy.path] = absolute(read("../PRIVACY.md"), "PRIVACY.md");
 
 const outside = (href) => (/^(https?:|mailto:)/.test(href) ? href : `${site}/${href.replace(/^\.\//, "")}`);
 
@@ -486,7 +513,7 @@ const llms = `# Clauset
 
 ## Pages
 
-${listed([pages[0], releases, licence])}
+${listed([pages[0], releases, licence, privacy])}
 
 ## Documentation
 
@@ -497,10 +524,7 @@ ${listed(pages.filter((page) => page.path.startsWith("docs/")))}
 - [GitHub repository](${repository}): the app, the CLI and this site, under the MIT licence.
 `;
 write("public/llms.txt", llms);
-write(
-  "public/llms-full.txt",
-  `${llms}\n${pages.map((page) => `---\n\nSource: ${site}/${page.path}\n\n${markdown[page.path]}`).join("\n")}`,
-);
+write("public/llms-full.txt", `${llms}\n${pages.map((page) => `---\n\nSource: ${site}/${page.path}\n\n${markdown[page.path]}`).join("\n")}`);
 
 write("public/robots.txt", `User-agent: *\nAllow: /\n\nSitemap: ${site}/sitemap.xml\n`);
 write(

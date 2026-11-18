@@ -3,7 +3,8 @@
   "private": true,
   "scripts": {
     "build": "mkdir -p public && find public -mindepth 1 -delete && tailwindcss -i src/site.css -o public/assets/site.css --minify && node build.mjs",
-    "dev": "tailwindcss -i src/site.css -o public/assets/site.css --watch"
+    "dev": "tailwindcss -i src/site.css -o public/assets/site.css --watch",
+    "format": "prettier --write build.mjs src/site.css src/index.html src/site.js"
   },
   "devDependencies": {
     "@alpinejs/persist": "^3.17.5",
@@ -12,6 +13,15 @@
     "alpinejs": "^3.17.5",
     "marked": "^18.2.1",
     "node-html-parser": "^9.0.7",
+    "prettier": "^3.10.1",
+    "prettier-plugin-tailwindcss": "^0.8.1",
     "tailwindcss": "^4.1.0"
+  },
+  "prettier": {
+    "printWidth": 150,
+    "plugins": [
+      "prettier-plugin-tailwindcss"
+    ],
+    "tailwindStylesheet": "./src/site.css"
   }
 }

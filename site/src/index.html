@@ -71,60 +71,114 @@
         <div class="mac-bar h-11! justify-between! px-1.5! sm:h-[34px]! sm:px-2.5!">
           <nav aria-label="Site" class="flex h-full items-center">
             <div class="bar-menu" x-ref="clauset">
-              <button type="button" class="bar-title font-bold!" aria-haspopup="true" aria-expanded="false" x-bind="title('clauset')"><img src="img/icon.png" alt="" class="size-[18px]" />Clauset</button>
+              <button type="button" class="bar-title font-bold!" aria-haspopup="true" aria-expanded="false" x-bind="title('clauset')">
+                <img src="img/icon.png" alt="" class="size-[18px]" />Clauset
+              </button>
               <div class="mac-menu bar-drop" role="menu" hidden x-bind="drop('clauset')">
-                <a class="bar-item " role="menuitem" href="./">About Clauset</a>
-                <a class="bar-item " role="menuitem" href="changelog/">What's New</a>
+                <a class="bar-item" role="menuitem" href="./">About Clauset</a>
+                <a class="bar-item" role="menuitem" href="changelog/">What's New</a>
                 <div class="mac-sep" role="separator"></div>
                 <a class="bar-item md:hidden" role="menuitem" href="#features">Features</a>
                 <a class="bar-item md:hidden" role="menuitem" href="#app">The Menu Bar App</a>
                 <a class="bar-item md:hidden" role="menuitem" href="#command-line">The CLI</a>
                 <a class="bar-item md:hidden" role="menuitem" href="docs/">Documentation</a>
                 <div class="mac-sep md:hidden" role="separator"></div>
-                <a class="bar-item " role="menuitem" href="https://github.com/mischasigtermans/clauset" target="_blank" rel="noopener">View on GitHub</a>
-                <a class="bar-item " role="menuitem" href="licence/">MIT Licence</a>
+                <a class="bar-item" role="menuitem" href="https://github.com/mischasigtermans/clauset" target="_blank" rel="noopener"
+                  >View on GitHub</a
+                >
+                <a class="bar-item" role="menuitem" href="licence/">MIT Licence</a>
               </div>
             </div>
             <div class="bar-menu max-md:hidden" x-ref="features">
               <button type="button" class="bar-title" aria-haspopup="true" aria-expanded="false" x-bind="title('features')">Features</button>
               <div class="mac-menu bar-drop" role="menu" hidden x-bind="drop('features')">
-                <a class="bar-item " role="menuitem" href="#limits"><svg aria-hidden="true"><use href="img/icons.svg#gauge" /></svg>See Every Limit</a>
-                <a class="bar-item " role="menuitem" href="#notifications"><svg aria-hidden="true"><use href="img/icons.svg#app-window" /></svg>Notifications</a>
-                <a class="bar-item " role="menuitem" href="#move"><svg aria-hidden="true"><use href="img/icons.svg#arrow-u-up-left" /></svg>Move a Session</a>
-                <a class="bar-item " role="menuitem" href="#default"><svg aria-hidden="true"><use href="img/icons.svg#power" /></svg>Pick Where Sessions Start</a>
-                <a class="bar-item" role="menuitem" href="#shared"><svg aria-hidden="true"><use href="img/icons.svg#plugs" /></svg>What's Shared</a>
+                <a class="bar-item" role="menuitem" href="#limits"
+                  ><svg aria-hidden="true"><use href="img/icons.svg#gauge" /></svg>See Every Limit</a
+                >
+                <a class="bar-item" role="menuitem" href="#notifications"
+                  ><svg aria-hidden="true"><use href="img/icons.svg#app-window" /></svg>Notifications</a
+                >
+                <a class="bar-item" role="menuitem" href="#move"
+                  ><svg aria-hidden="true"><use href="img/icons.svg#arrow-u-up-left" /></svg>Move a Session</a
+                >
+                <a class="bar-item" role="menuitem" href="#default"
+                  ><svg aria-hidden="true"><use href="img/icons.svg#power" /></svg>Pick Where Sessions Start</a
+                >
+                <a class="bar-item" role="menuitem" href="#shared"
+                  ><svg aria-hidden="true"><use href="img/icons.svg#plugs" /></svg>What's Shared</a
+                >
                 <div class="mac-sep" role="separator"></div>
-                <a class="bar-item " role="menuitem" href="#app">The Menu Bar App</a>
-                <a class="bar-item " role="menuitem" href="#command-line">The CLI</a>
+                <a class="bar-item" role="menuitem" href="#app">The Menu Bar App</a>
+                <a class="bar-item" role="menuitem" href="#command-line">The CLI</a>
               </div>
             </div>
             <div class="bar-menu" x-ref="download">
               <button type="button" class="bar-title" aria-haspopup="true" aria-expanded="false" x-bind="title('download')">Download</button>
               <div class="mac-menu bar-drop" role="menu" hidden x-bind="drop('download')">
-                <a class="bar-item " role="menuitem" href="https://github.com/mischasigtermans/clauset/releases/latest/download/Clauset.dmg"><svg aria-hidden="true"><use href="img/icons.svg#download-simple" /></svg>Download for macOS</a>
-                <button type="button" class="bar-item" role="menuitem" data-copy="brew install --cask mischasigtermans/tap/clauset" x-data="copy('Copy Homebrew Command', 'Copied. Paste it in Terminal')" @click="run()"><img src="img/homebrew.svg" alt="" width="11" height="16" /><span aria-live="polite" x-text="label">Copy Homebrew Command</span></button>
+                <a class="bar-item" role="menuitem" href="https://github.com/mischasigtermans/clauset/releases/latest/download/Clauset.dmg"
+                  ><svg aria-hidden="true"><use href="img/icons.svg#download-simple" /></svg>Download for macOS</a
+                >
+                <button
+                  type="button"
+                  class="bar-item"
+                  role="menuitem"
+                  data-copy="brew install --cask mischasigtermans/tap/clauset"
+                  x-data="copy('Copy Homebrew Command', 'Copied. Paste it in Terminal')"
+                  @click="run()"
+                >
+                  <img src="img/homebrew.svg" alt="" width="11" height="16" /><span aria-live="polite" x-text="label">Copy Homebrew Command</span>
+                </button>
                 <div class="mac-sep" role="separator"></div>
-                <a class="bar-item " role="menuitem" href="#command-line"><svg aria-hidden="true"><use href="img/icons.svg#terminal-window" /></svg>CLI Only</a>
+                <a class="bar-item" role="menuitem" href="#command-line"
+                  ><svg aria-hidden="true"><use href="img/icons.svg#terminal-window" /></svg>CLI Only</a
+                >
               </div>
             </div>
             <div class="bar-menu max-md:hidden" x-ref="help">
               <button type="button" class="bar-title" aria-haspopup="true" aria-expanded="false" x-bind="title('help')">Help</button>
               <div class="mac-menu bar-drop" role="menu" hidden x-bind="drop('help')">
-                <label class="bar-search"><svg aria-hidden="true"><use href="img/icons.svg#magnifying-glass" /></svg><input type="search" placeholder="Search" aria-label="Search the documentation" autocomplete="off" data-search="assets/search.json" x-ref="search" x-model="query" @input.once="load()" /></label>
+                <label class="bar-search"
+                  ><svg aria-hidden="true"><use href="img/icons.svg#magnifying-glass" /></svg
+                  ><input
+                    type="search"
+                    placeholder="Search"
+                    aria-label="Search the documentation"
+                    autocomplete="off"
+                    data-search="assets/search.json"
+                    x-ref="search"
+                    x-model="query"
+                    @input.once="load()"
+                /></label>
                 <div data-search-results hidden :hidden="!hits.length">
-                  <template x-for="page in hits" :key="page.url"><a class="bar-item" role="menuitem" :href="page.url" x-text="page.title"></a></template>
+                  <template x-for="page in hits" :key="page.url"
+                    ><a class="bar-item" role="menuitem" :href="page.url" x-text="page.title"></a
+                  ></template>
                 </div>
-                <a class="bar-item " role="menuitem" href="docs/"><svg aria-hidden="true"><use href="img/icons.svg#book-open" /></svg>Documentation</a>
-                <a class="bar-item " role="menuitem" href="changelog/"><svg aria-hidden="true"><use href="img/icons.svg#clock-counter-clockwise" /></svg>Changelog</a>
+                <a class="bar-item" role="menuitem" href="docs/"
+                  ><svg aria-hidden="true"><use href="img/icons.svg#book-open" /></svg>Documentation</a
+                >
+                <a class="bar-item" role="menuitem" href="changelog/"
+                  ><svg aria-hidden="true"><use href="img/icons.svg#clock-counter-clockwise" /></svg>Changelog</a
+                >
                 <div class="mac-sep" role="separator"></div>
-                <a class="bar-item " role="menuitem" href="#questions">Questions</a>
-                <a class="bar-item " role="menuitem" href="https://github.com/mischasigtermans/clauset/issues" target="_blank" rel="noopener">Report an Issue</a>
+                <a class="bar-item" role="menuitem" href="#questions">Questions</a>
+                <a class="bar-item" role="menuitem" href="https://github.com/mischasigtermans/clauset/issues" target="_blank" rel="noopener"
+                  >Report an Issue</a
+                >
               </div>
             </div>
           </nav>
           <div class="flex h-full items-center">
             <div class="bar-menu" x-ref="app">
-              <button type="button" class="bar-title tabular-nums" aria-haspopup="true" aria-expanded="false" aria-label="Clauset: Personal at 18% of its 5-hour limit" :aria-label="`Clauset: ${$store.accounts.current} at ${$store.accounts.level}% of its 5-hour limit`" x-bind="title('app')">
+              <button
+                type="button"
+                class="bar-title tabular-nums"
+                aria-haspopup="true"
+                aria-expanded="false"
+                aria-label="Clauset: Personal at 18% of its 5-hour limit"
+                :aria-label="`Clauset: ${$store.accounts.current} at ${$store.accounts.level}% of its 5-hour limit`"
+                x-bind="title('app')"
+              >
                 <span class="meter-bar">
                   <i class="top-0.5 h-[7px]"><b style="--p: 18%" x-meter="$store.accounts.level"></b></i>
                   <i class="top-[11px] h-[3px]"><b style="--p: 28%" x-meter="$store.accounts.week[$store.accounts.current]"></b></i>
@@ -133,15 +187,41 @@
               </button>
               <div class="mac-menu bar-drop bar-drop-end w-[min(380px,calc(100vw-0.75rem))]" role="menu" hidden x-bind="drop('app')">
                 <div class="mac-head">New Sessions Start On</div>
-                <button type="button" class="mac-row bar-row" role="menuitemradio" aria-checked="true" :aria-checked="$store.accounts.current === 'Personal'" @click="$store.accounts.pick('Personal')">
+                <button
+                  type="button"
+                  class="mac-row bar-row"
+                  role="menuitemradio"
+                  aria-checked="true"
+                  :aria-checked="$store.accounts.current === 'Personal'"
+                  @click="$store.accounts.pick('Personal')"
+                >
                   <span class="mac-check" x-text="$store.accounts.current === 'Personal' ? '✓' : ''">✓</span>
-                  <span class="meter"><i><b style="--p: 18%" x-meter="$store.accounts.used.Personal"></b></i><i><b style="--p: 28%"></b></i><i><b style="--p: 12%"></b></i></span>
-                  <span><span class="mac-name block">Personal</span><span class="mac-sub block">5h <span x-text="$store.accounts.used.Personal">18</span>% | 7d 28% | Fable 12%</span></span>
+                  <span class="meter"
+                    ><i><b style="--p: 18%" x-meter="$store.accounts.used.Personal"></b></i><i><b style="--p: 28%"></b></i
+                    ><i><b style="--p: 12%"></b></i
+                  ></span>
+                  <span
+                    ><span class="mac-name block">Personal</span
+                    ><span class="mac-sub block">5h <span x-text="$store.accounts.used.Personal">18</span>% | 7d 28% | Fable 12%</span></span
+                  >
                 </button>
-                <button type="button" class="mac-row bar-row" role="menuitemradio" aria-checked="false" :aria-checked="$store.accounts.current === 'Work'" @click="$store.accounts.pick('Work')">
+                <button
+                  type="button"
+                  class="mac-row bar-row"
+                  role="menuitemradio"
+                  aria-checked="false"
+                  :aria-checked="$store.accounts.current === 'Work'"
+                  @click="$store.accounts.pick('Work')"
+                >
                   <span class="mac-check" x-text="$store.accounts.current === 'Work' ? '✓' : ''"></span>
-                  <span class="meter"><i><b class="warn" style="--p: 74%" x-meter="$store.accounts.used.Work"></b></i><i><b style="--p: 61%"></b></i><i><b style="--p: 20%"></b></i></span>
-                  <span><span class="mac-name block">Work</span><span class="mac-sub block">5h <span x-text="$store.accounts.used.Work">74</span>% | 7d 61% | Fable 20%</span></span>
+                  <span class="meter"
+                    ><i><b class="warn" style="--p: 74%" x-meter="$store.accounts.used.Work"></b></i><i><b style="--p: 61%"></b></i
+                    ><i><b style="--p: 20%"></b></i
+                  ></span>
+                  <span
+                    ><span class="mac-name block">Work</span
+                    ><span class="mac-sub block">5h <span x-text="$store.accounts.used.Work">74</span>% | 7d 61% | Fable 20%</span></span
+                  >
                 </button>
                 <div class="mac-sep" role="separator"></div>
                 <a class="bar-item bar-item-plain" role="menuitem" href="#move">Move Sessions<span>›</span></a>
@@ -162,24 +242,84 @@
       <main>
         <section>
           <div class="relative overflow-hidden" data-opens-menu>
-            <picture><source media="(prefers-color-scheme: dark)" srcset="img/scene-dark.jpg" /><img src="img/scene-light.jpg" alt="" class="absolute inset-0 size-full object-cover " /></picture>
-            <div class="absolute inset-0 bg-[radial-gradient(55%_60%_at_50%_52%,var(--color-page)_35%,transparent)] dark:bg-[radial-gradient(55%_60%_at_50%_52%,var(--color-night)_35%,transparent)]" aria-hidden="true"></div>
+            <picture
+              ><source media="(prefers-color-scheme: dark)" srcset="img/scene-dark.jpg" />
+              <img src="img/scene-light.jpg" alt="" class="absolute inset-0 size-full object-cover"
+            /></picture>
+            <div
+              class="absolute inset-0 bg-[radial-gradient(55%_60%_at_50%_52%,var(--color-page)_35%,transparent)] dark:bg-[radial-gradient(55%_60%_at_50%_52%,var(--color-night)_35%,transparent)]"
+              aria-hidden="true"
+            ></div>
             <div class="absolute inset-x-0 bottom-0 h-40 bg-linear-to-b from-transparent to-page dark:to-night" aria-hidden="true"></div>
             <!-- The note points at the meter in the menu bar. It sits under the meter: the row repeats the bar's padding and its clock, unseen, so the arrow ends where the meter does. The app's menu opens over it. -->
-            <div class="mac pointer-events-none absolute inset-x-0 top-0 flex items-start justify-end px-1.5 pt-4 font-medium sm:px-2.5" aria-hidden="true">
-              <p class="mr-[3.625rem] flex -rotate-6 items-center gap-1.5 font-['Bradley_Hand',cursive] text-xl text-ink/70 dark:text-fog/70">it lives up here<svg class="h-7 w-8 -translate-y-1.5" viewBox="0 0 40 36" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 32c9-1 17-6 22-13 3-4 5-9 6.500-14" /><path d="M24 11.500c3-2 5.500-4.500 7.500-7.500 1.500 3.500 3.200 7 5 10.500" /></svg></p>
+            <div
+              class="mac pointer-events-none absolute inset-x-0 top-0 flex items-start justify-end px-1.5 pt-4 font-medium sm:px-2.5"
+              aria-hidden="true"
+            >
+              <p class="mr-[3.625rem] flex -rotate-6 items-center gap-1.5 font-['Bradley_Hand',cursive] text-xl text-ink/70 dark:text-fog/70">
+                it lives up here<svg
+                  class="h-7 w-8 -translate-y-1.5"
+                  viewBox="0 0 40 36"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.8"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path d="M3 32c9-1 17-6 22-13 3-4 5-9 6.500-14" />
+                  <path d="M24 11.500c3-2 5.500-4.500 7.500-7.500 1.500 3.500 3.200 7 5 10.500" />
+                </svg>
+              </p>
               <span class="invisible px-2.5 tabular-nums max-sm:hidden" x-text="$store.clock.now">Tue 17 Nov 12:50</span>
             </div>
             <div class="relative mx-auto max-w-6xl px-6 pt-20 pb-20 text-center sm:pb-24 lg:px-8 xl:min-h-[52rem] xl:pt-50">
               <img src="img/icon.png" alt="" class="rise mx-auto size-24 drop-shadow-[0_24px_30px_rgb(74_79_217/0.35)] sm:size-[7.5rem]" />
-              <h1 class="rise mx-auto mt-8 max-w-[14ch] text-[2.5rem]/11 font-semibold tracking-tight text-balance [--i:1] sm:text-6xl lg:text-7xl">One Mac. Every Claude account.</h1>
-              <p class="rise mx-auto mt-5 max-w-[44ch] text-base/7 text-pretty text-ink/70 [--i:2] sm:mt-6 sm:text-lg/8 dark:text-fog/75">See each account's limits, choose where new sessions start, and move a session before a limit stops it.</p>
-              <div class="rise mt-10 flex justify-center [--i:3]"><a href="https://github.com/mischasigtermans/clauset/releases/latest/download/Clauset.dmg" class="pressable inline-flex items-center justify-center gap-2 rounded-full bg-brand py-3.5 pr-6 pl-4 text-base/6 font-medium text-white shadow-[0_10px_30px_-8px] shadow-brand/60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"><svg class="size-5 fill-current" aria-hidden="true"><use href="img/icons.svg#download-simple" /></svg>Download for macOS</a></div>
+              <h1 class="rise mx-auto mt-8 max-w-[14ch] text-[2.5rem]/11 font-semibold tracking-tight text-balance [--i:1] sm:text-6xl lg:text-7xl">
+                One Mac. Every Claude account.
+              </h1>
+              <p class="rise mx-auto mt-5 max-w-[44ch] text-base/7 text-pretty text-ink/70 [--i:2] sm:mt-6 sm:text-lg/8 dark:text-fog/75">
+                See each account's limits, choose where new sessions start, and move a session before a limit stops it.
+              </p>
+              <div class="rise mt-10 flex justify-center [--i:3]">
+                <a
+                  href="https://github.com/mischasigtermans/clauset/releases/latest/download/Clauset.dmg"
+                  class="inline-flex pressable items-center justify-center gap-2 rounded-full bg-brand py-3.5 pr-6 pl-4 text-base/6 font-medium text-white shadow-[0_10px_30px_-8px] shadow-brand/60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+                  ><svg class="size-5 fill-current" aria-hidden="true"><use href="img/icons.svg#download-simple" /></svg>Download for macOS</a
+                >
+              </div>
               <div class="rise mt-6 flex flex-col items-center gap-2.5 text-xs/5 text-muted [--i:4] sm:text-sm/6 dark:text-mist">
                 <span>or with Homebrew</span>
-                <span class="surface inline-flex max-w-full items-center gap-1 rounded-2xl py-1 pr-1 pl-3.5 text-left sm:rounded-full"><code class="min-w-0 font-mono text-xs/5 text-ink sm:text-[0.8125rem]/6 dark:text-fog">brew install --cask <wbr />mischasigtermans/<wbr />tap/clauset</code><button type="button" class="copy" data-copy="brew install --cask mischasigtermans/tap/clauset" x-data="copy" :data-saying="saying" @click="run()"><span><svg aria-hidden="true"><use href="img/icons.svg#copy" /></svg>Copy</span><span aria-live="polite" x-text="said"></span></button></span>
+                <span class="inline-flex max-w-full items-center gap-1 rounded-2xl py-1 pr-1 pl-3.5 text-left surface sm:rounded-full"
+                  ><code class="min-w-0 font-mono text-xs/5 text-ink sm:text-[0.8125rem]/6 dark:text-fog"
+                    >brew install --cask <wbr />mischasigtermans/<wbr />tap/clauset</code
+                  ><button
+                    type="button"
+                    class="copy"
+                    data-copy="brew install --cask mischasigtermans/tap/clauset"
+                    x-data="copy"
+                    :data-saying="saying"
+                    @click="run()"
+                  >
+                    <span
+                      ><svg aria-hidden="true"><use href="img/icons.svg#copy" /></svg>Copy</span
+                    ><span aria-live="polite" x-text="said"></span></button
+                ></span>
               </div>
-              <p class="rise mt-6 flex flex-col items-center gap-x-3 gap-y-1.5 text-2xs text-muted [--i:4] sm:flex-row sm:justify-center sm:text-sm/6 dark:text-mist"><span class="flex items-center gap-x-3 whitespace-nowrap"><span>Free and open source</span><span aria-hidden="true" class="text-ink/20 dark:text-white/20">|</span><span>macOS 14.4 or later</span></span><span aria-hidden="true" class="text-ink/20 max-sm:hidden dark:text-white/20">|</span><span>You can also <a href="#command-line" class="relative font-medium text-ink underline underline-offset-4 dark:text-fog"><span class="absolute top-1/2 left-1/2 size-[max(100%,3rem)] -translate-1/2 pointer-fine:hidden" aria-hidden="true"></span>install the CLI only</a></span></p>
+              <p
+                class="rise mt-6 flex flex-col items-center gap-x-3 gap-y-1.5 text-2xs text-muted [--i:4] sm:flex-row sm:justify-center sm:text-sm/6 dark:text-mist"
+              >
+                <span class="flex items-center gap-x-3 whitespace-nowrap"
+                  ><span>Free and open source</span><span aria-hidden="true" class="text-ink/20 dark:text-white/20">|</span
+                  ><span>macOS 14.4 or later</span></span
+                ><span aria-hidden="true" class="text-ink/20 max-sm:hidden dark:text-white/20">|</span
+                ><span
+                  >You can also
+                  <a href="#command-line" class="relative font-medium text-ink underline underline-offset-4 dark:text-fog"
+                    ><span class="absolute top-1/2 left-1/2 size-[max(100%,3rem)] -translate-1/2 pointer-fine:hidden" aria-hidden="true"></span
+                    >install the CLI only</a
+                  ></span
+                >
+              </p>
             </div>
           </div>
         </section>
@@ -194,21 +334,36 @@
             </div>
 
             <dl class="mt-10 grid grid-cols-1 gap-4 sm:mt-14 md:grid-cols-6">
-              <div id="limits" class="scroll-mt-16 reveal card row-span-2 grid grid-rows-subgrid gap-y-0 overflow-hidden md:col-span-6 lg:col-span-4" x-reveal>
-                <div class="mac fills well flex min-h-64 flex-col justify-center gap-5 p-6 lg:px-8" aria-hidden="true" x-reveal x-data="usage([42, 28, 12, 31, 74, 20, 93, 55, 8])">
+              <div
+                id="limits"
+                class="reveal row-span-2 grid scroll-mt-16 grid-rows-subgrid gap-y-0 overflow-hidden card md:col-span-6 lg:col-span-4"
+                x-reveal
+              >
+                <div
+                  class="mac fills flex min-h-64 flex-col justify-center gap-5 p-6 well lg:px-8"
+                  aria-hidden="true"
+                  x-reveal
+                  x-data="usage([42, 28, 12, 31, 74, 20, 93, 55, 8])"
+                >
                   <div class="grid grid-cols-1 items-center gap-x-6 gap-y-2 sm:grid-cols-[5.5rem_1fr]">
                     <div class="mac-name">Personal</div>
                     <div class="grid grid-cols-3 gap-4">
                       <div class="gauge">
-                        <span class="mac-sub">5h</span><span class="meter meter-wide"><i><b style="--p: 42%" x-meter="values[0]"></b></i></span
+                        <span class="mac-sub">5h</span
+                        ><span class="meter meter-wide"
+                          ><i><b style="--p: 42%" x-meter="values[0]"></b></i></span
                         ><span class="mac-sub" x-text="`${values[0]}%`">42%</span>
                       </div>
                       <div class="gauge">
-                        <span class="mac-sub">7d</span><span class="meter meter-wide"><i><b style="--p: 28%; --n: 1" x-meter="values[1]"></b></i></span
+                        <span class="mac-sub">7d</span
+                        ><span class="meter meter-wide"
+                          ><i><b style="--p: 28%; --n: 1" x-meter="values[1]"></b></i></span
                         ><span class="mac-sub" x-text="`${values[1]}%`">28%</span>
                       </div>
                       <div class="gauge">
-                        <span class="mac-sub">Fable</span><span class="meter meter-wide"><i><b style="--p: 12%; --n: 2" x-meter="values[2]"></b></i></span
+                        <span class="mac-sub">Fable</span
+                        ><span class="meter meter-wide"
+                          ><i><b style="--p: 12%; --n: 2" x-meter="values[2]"></b></i></span
                         ><span class="mac-sub" x-text="`${values[2]}%`">12%</span>
                       </div>
                     </div>
@@ -217,15 +372,21 @@
                     <div class="mac-name">Work</div>
                     <div class="grid grid-cols-3 gap-4">
                       <div class="gauge">
-                        <span class="mac-sub">5h</span><span class="meter meter-wide"><i><b style="--p: 31%; --n: 3" x-meter="values[3]"></b></i></span
+                        <span class="mac-sub">5h</span
+                        ><span class="meter meter-wide"
+                          ><i><b style="--p: 31%; --n: 3" x-meter="values[3]"></b></i></span
                         ><span class="mac-sub" x-text="`${values[3]}%`">31%</span>
                       </div>
                       <div class="gauge">
-                        <span class="mac-sub">7d</span><span class="meter meter-wide"><i><b class="warn" style="--p: 74%; --n: 4" x-meter="values[4]"></b></i></span
+                        <span class="mac-sub">7d</span
+                        ><span class="meter meter-wide"
+                          ><i><b class="warn" style="--p: 74%; --n: 4" x-meter="values[4]"></b></i></span
                         ><span class="mac-sub" x-text="`${values[4]}%`">74%</span>
                       </div>
                       <div class="gauge">
-                        <span class="mac-sub">Fable</span><span class="meter meter-wide"><i><b style="--p: 20%; --n: 5" x-meter="values[5]"></b></i></span
+                        <span class="mac-sub">Fable</span
+                        ><span class="meter meter-wide"
+                          ><i><b style="--p: 20%; --n: 5" x-meter="values[5]"></b></i></span
                         ><span class="mac-sub" x-text="`${values[5]}%`">20%</span>
                       </div>
                     </div>
@@ -234,15 +395,21 @@
                     <div class="mac-name">Client</div>
                     <div class="grid grid-cols-3 gap-4">
                       <div class="gauge">
-                        <span class="mac-sub">5h</span><span class="meter meter-wide"><i><b class="full" style="--p: 93%; --n: 6" x-meter="values[6]"></b></i></span
+                        <span class="mac-sub">5h</span
+                        ><span class="meter meter-wide"
+                          ><i><b class="full" style="--p: 93%; --n: 6" x-meter="values[6]"></b></i></span
                         ><span class="mac-sub" x-text="`${values[6]}%`">93%</span>
                       </div>
                       <div class="gauge">
-                        <span class="mac-sub">7d</span><span class="meter meter-wide"><i><b style="--p: 55%; --n: 7" x-meter="values[7]"></b></i></span
+                        <span class="mac-sub">7d</span
+                        ><span class="meter meter-wide"
+                          ><i><b style="--p: 55%; --n: 7" x-meter="values[7]"></b></i></span
                         ><span class="mac-sub" x-text="`${values[7]}%`">55%</span>
                       </div>
                       <div class="gauge">
-                        <span class="mac-sub">Fable</span><span class="meter meter-wide"><i><b style="--p: 8%; --n: 8" x-meter="values[8]"></b></i></span
+                        <span class="mac-sub">Fable</span
+                        ><span class="meter meter-wide"
+                          ><i><b style="--p: 8%; --n: 8" x-meter="values[8]"></b></i></span
                         ><span class="mac-sub" x-text="`${values[8]}%`">8%</span>
                       </div>
                     </div>
@@ -251,13 +418,17 @@
                 <div class="p-6 lg:p-8">
                   <dt class="text-lg/7 font-semibold tracking-tight">See every limit.</dt>
                   <dd class="mt-2 max-w-[56ch] text-base/7 text-pretty text-muted dark:text-mist">
-                    Each account shows its 5-hour window, its 7-day window and the weekly limit of one model, such as Fable. A bar turns orange from 70%
-                    and red from 90%.
+                    Each account shows its 5-hour window, its 7-day window and the weekly limit of one model, such as Fable. A bar turns orange from
+                    70% and red from 90%.
                   </dd>
                 </div>
               </div>
 
-              <div id="notifications" class="scroll-mt-16 reveal card row-span-2 grid grid-rows-subgrid gap-y-0 overflow-hidden [--i:1] md:col-span-3 lg:col-span-2 lg:row-span-4" x-reveal>
+              <div
+                id="notifications"
+                class="reveal row-span-2 grid scroll-mt-16 grid-rows-subgrid gap-y-0 overflow-hidden card [--i:1] md:col-span-3 lg:col-span-2 lg:row-span-4"
+                x-reveal
+              >
                 <div class="mac relative flex min-h-60 flex-col overflow-hidden lg:row-span-3" aria-hidden="true">
                   <picture>
                     <source media="(prefers-color-scheme: dark)" srcset="img/scene-dark.jpg" />
@@ -306,8 +477,12 @@
                 </div>
               </div>
 
-              <div id="move" class="scroll-mt-16 reveal card row-span-2 grid grid-rows-subgrid gap-y-0 overflow-hidden [--i:1] md:col-span-3 lg:col-span-2 lg:[--i:0]" x-reveal>
-                <div class="mac well flex min-h-56 items-center p-6 lg:px-8" aria-hidden="true">
+              <div
+                id="move"
+                class="reveal row-span-2 grid scroll-mt-16 grid-rows-subgrid gap-y-0 overflow-hidden card [--i:1] md:col-span-3 lg:col-span-2 lg:[--i:0]"
+                x-reveal
+              >
+                <div class="mac flex min-h-56 items-center p-6 well lg:px-8" aria-hidden="true">
                   <div class="grid w-full grid-cols-2 gap-4 transition-opacity duration-200" x-data="move" :class="{ 'opacity-0': faded }">
                     <div>
                       <div class="mac-name">Work</div>
@@ -335,8 +510,8 @@
                 </div>
               </div>
 
-              <div class="reveal card row-span-2 grid grid-rows-subgrid gap-y-0 overflow-hidden md:col-span-3 lg:col-span-2 lg:[--i:1]" x-reveal>
-                <div class="mac well flex min-h-56 flex-col justify-center gap-4 p-6 lg:px-8" aria-hidden="true">
+              <div class="reveal row-span-2 grid grid-rows-subgrid gap-y-0 overflow-hidden card md:col-span-3 lg:col-span-2 lg:[--i:1]" x-reveal>
+                <div class="mac flex min-h-56 flex-col justify-center gap-4 p-6 well lg:px-8" aria-hidden="true">
                   <div>
                     <div class="mac-sub font-mono">~/.claude</div>
                     <div class="mt-2 flex flex-wrap gap-1.5">
@@ -368,8 +543,16 @@
                 </div>
               </div>
 
-              <div id="default" class="scroll-mt-16 reveal card row-span-2 grid grid-rows-subgrid gap-y-0 overflow-hidden [--i:1] md:col-span-3 lg:[--i:0]" x-reveal>
-                <div class="mac well flex min-h-72 flex-col justify-center gap-4 p-6 lg:px-8" aria-hidden="true" x-data="chosen(['personal', 'work'], 1)">
+              <div
+                id="default"
+                class="reveal row-span-2 grid scroll-mt-16 grid-rows-subgrid gap-y-0 overflow-hidden card [--i:1] md:col-span-3 lg:[--i:0]"
+                x-reveal
+              >
+                <div
+                  class="mac flex min-h-72 flex-col justify-center gap-4 p-6 well lg:px-8"
+                  aria-hidden="true"
+                  x-data="chosen(['personal', 'work'], 1)"
+                >
                   <div class="mac-menu">
                     <div class="mac-head">New Sessions Start On</div>
                     <div class="mac-row" :data-chosen="at === 0"><span class="mac-check" x-text="at === 0 ? '✓' : ''"></span>Personal</div>
@@ -383,20 +566,21 @@
                 <div class="p-6 lg:p-8">
                   <dt class="text-lg/7 font-semibold tracking-tight">Pick where new sessions start.</dt>
                   <dd class="mt-2 max-w-[56ch] text-base/7 text-pretty text-muted dark:text-mist">
-                    Choose an account in the menu and every new <code class="code">claude</code> starts there. A session started from another
-                    session stays on that session's account.
+                    Choose an account in the menu and every new <code class="code">claude</code> starts there. A session started from another session
+                    stays on that session's account.
                   </dd>
                 </div>
               </div>
 
-              <div class="reveal card row-span-2 grid grid-rows-subgrid gap-y-0 overflow-hidden md:col-span-6 lg:col-span-3 lg:[--i:1]" x-reveal>
-                <div class="mac well flex min-h-72 flex-col justify-center gap-3 p-6 lg:px-8" x-data="{ updates: true }">
+              <div class="reveal row-span-2 grid grid-rows-subgrid gap-y-0 overflow-hidden card md:col-span-6 lg:col-span-3 lg:[--i:1]" x-reveal>
+                <div class="mac flex min-h-72 flex-col justify-center gap-3 p-6 well lg:px-8" x-data="{ updates: true }">
                   <div class="mac-menu">
                     <div class="mac-row justify-between">
                       <span class="flex items-center gap-2 font-mono text-[13px]"><img src="img/icon.png" alt="" class="size-[18px]" />clauset</span
                       ><span class="mac-sub flex items-center gap-1.5" aria-live="polite"
                         ><svg class="size-3.5 fill-current" aria-hidden="true" x-show="updates"><use href="img/icons.svg#github-logo" /></svg
-                        ><svg class="size-3.5 fill-current" aria-hidden="true" style="display: none" x-show="!updates"><use href="img/icons.svg#wifi-slash" /></svg
+                        ><svg class="size-3.5 fill-current" aria-hidden="true" style="display: none" x-show="!updates">
+                          <use href="img/icons.svg#wifi-slash" /></svg
                         ><span x-text="updates ? 'only asks GitHub for updates' : 'makes no network call'">only asks GitHub for updates</span></span
                       >
                     </div>
@@ -423,15 +607,17 @@
                       @click="updates = !updates"
                       class="group/switch relative flex h-[22px] w-[38px] flex-none cursor-pointer rounded-full bg-(--mac-track) p-0.5 transition-colors duration-200 ease-out before:absolute before:-inset-3 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--mac-accent) aria-checked:bg-(--mac-accent)"
                     >
-                      <span class="size-[18px] rounded-full bg-white shadow-sm transition-transform duration-200 ease-out group-aria-checked/switch:translate-x-4"></span>
+                      <span
+                        class="size-[18px] rounded-full bg-white shadow-sm transition-transform duration-200 ease-out group-aria-checked/switch:translate-x-4"
+                      ></span>
                     </button>
                   </div>
                 </div>
                 <div class="p-6 lg:p-8">
                   <dt class="text-lg/7 font-semibold tracking-tight">It reads no token.</dt>
                   <dd class="mt-2 max-w-[56ch] text-base/7 text-pretty text-muted dark:text-mist">
-                    <code class="code">clauset</code> makes no network call. Only the official <code class="code">claude</code> binary talks
-                    to Anthropic. The app asks before it goes online, then checks GitHub for a newer version once a week.
+                    <code class="code">clauset</code> makes no network call. Only the official <code class="code">claude</code> binary talks to
+                    Anthropic. The app asks before it goes online, then checks GitHub for a newer version once a week.
                   </dd>
                 </div>
               </div>
@@ -442,11 +628,51 @@
         <section>
           <div class="mx-auto max-w-6xl px-6 lg:px-8">
             <div class="reveal rounded-3xl bg-ink/4 px-6 py-12 text-center sm:py-20 dark:bg-white/4" x-reveal>
-              <h2 class="mx-auto text-3xl/[1.4] font-semibold tracking-tight sm:text-5xl/[1.3] lg:text-[3.5rem]/[1.25] xl:text-6xl/[1.25]" aria-label="Personal is at 18% of its limit." :aria-label="`${$store.accounts.current} is at ${$store.accounts.level}% of its limit.`" x-data="live" @keydown.escape.window="open = false">
-    <span class="whitespace-nowrap"><span class="relative inline-flex align-middle" @click.outside="open = false"><button type="button" class="inline-flex -translate-y-[0.06em] items-center rounded-[0.32em] px-[0.36em] py-[0.04em] text-[0.82em] w-[5.3em] cursor-pointer justify-between gap-[0.2em] bg-brand text-white transition-transform duration-150 ease-out focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand" aria-haspopup="true" aria-expanded="false" :aria-expanded="open" :class="{ 'scale-96': pressed }" @click="toggle()"><span class="live-word" x-ref="word"><span>Personal</span></span><svg class="size-[0.55em] shrink-0 fill-current" aria-hidden="true"><use href="img/icons.svg#caret-down" /></svg></button><span class="live-menu" hidden :hidden="!open"><button type="button" aria-pressed="true" :aria-pressed="marked === 'Personal'" @click="choose('Personal')">Personal<span data-live-value x-text="`${$store.accounts.used.Personal}%`">18%</span></button><button type="button" aria-pressed="false" :aria-pressed="marked === 'Work'" @click="choose('Work')">Work<span data-live-value x-text="`${$store.accounts.used.Work}%`">74%</span></button></span></span> is at</span>
-    <br class="lg:hidden" />
-    <span class="whitespace-nowrap"><span class="inline-flex -translate-y-[0.06em] items-center rounded-[0.32em] px-[0.36em] py-[0.04em] text-[0.82em] gap-[0.3em] bg-ink/8 align-middle tabular-nums dark:bg-white/12"><span class="relative h-[0.42em] w-[1.15em] overflow-hidden rounded-full bg-ink/15 dark:bg-white/20"><b class="absolute inset-0 rounded-full bg-(--mac-accent) [clip-path:inset(0_calc(100%-var(--p))_0_0_round_9px)] transition-[clip-path,background-color] duration-700 ease-out [&.full]:bg-(--mac-red) [&.warn]:bg-(--mac-orange)" style="--p: 18%" x-meter="$store.accounts.level"></b></span><span x-text="`${$store.accounts.shown}%`">18%</span></span> of its limit.</span>
-  </h2>
+              <h2
+                class="mx-auto text-3xl/[1.4] font-semibold tracking-tight sm:text-5xl/[1.3] lg:text-[3.5rem]/[1.25] xl:text-6xl/[1.25]"
+                aria-label="Personal is at 18% of its limit."
+                :aria-label="`${$store.accounts.current} is at ${$store.accounts.level}% of its limit.`"
+                x-data="live"
+                @keydown.escape.window="open = false"
+              >
+                <span class="whitespace-nowrap"
+                  ><span class="relative inline-flex align-middle" @click.outside="open = false"
+                    ><button
+                      type="button"
+                      class="inline-flex w-[5.3em] -translate-y-[0.06em] cursor-pointer items-center justify-between gap-[0.2em] rounded-[0.32em] bg-brand px-[0.36em] py-[0.04em] text-[0.82em] text-white transition-transform duration-150 ease-out focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand"
+                      aria-haspopup="true"
+                      aria-expanded="false"
+                      :aria-expanded="open"
+                      :class="{ 'scale-96': pressed }"
+                      @click="toggle()"
+                    >
+                      <span class="live-word" x-ref="word"><span>Personal</span></span
+                      ><svg class="size-[0.55em] shrink-0 fill-current" aria-hidden="true"><use href="img/icons.svg#caret-down" /></svg></button
+                    ><span class="live-menu" hidden :hidden="!open"
+                      ><button type="button" aria-pressed="true" :aria-pressed="marked === 'Personal'" @click="choose('Personal')">
+                        Personal<span data-live-value x-text="`${$store.accounts.used.Personal}%`">18%</span></button
+                      ><button type="button" aria-pressed="false" :aria-pressed="marked === 'Work'" @click="choose('Work')">
+                        Work<span data-live-value x-text="`${$store.accounts.used.Work}%`">74%</span>
+                      </button></span
+                    ></span
+                  >
+                  is at</span
+                >
+                <br class="lg:hidden" />
+                <span class="whitespace-nowrap"
+                  ><span
+                    class="inline-flex -translate-y-[0.06em] items-center gap-[0.3em] rounded-[0.32em] bg-ink/8 px-[0.36em] py-[0.04em] align-middle text-[0.82em] tabular-nums dark:bg-white/12"
+                    ><span class="relative h-[0.42em] w-[1.15em] overflow-hidden rounded-full bg-ink/15 dark:bg-white/20"
+                      ><b
+                        class="absolute inset-0 rounded-full bg-(--mac-accent) transition-[clip-path,background-color] duration-700 ease-out [clip-path:inset(0_calc(100%-var(--p))_0_0_round_9px)] [&.full]:bg-(--mac-red) [&.warn]:bg-(--mac-orange)"
+                        style="--p: 18%"
+                        x-meter="$store.accounts.level"
+                      ></b></span
+                    ><span x-text="`${$store.accounts.shown}%`">18%</span></span
+                  >
+                  of its limit.</span
+                >
+              </h2>
               <p class="mt-6 text-base/7 text-muted sm:text-sm/6 dark:text-mist">Pick an account. The menu bar follows.</p>
             </div>
           </div>
@@ -458,8 +684,8 @@
               <div class="reveal lg:pr-16" x-reveal>
                 <h2 class="max-w-[24ch] text-3xl font-semibold tracking-tight text-balance sm:text-4xl lg:text-5xl">Set up in one window.</h2>
                 <p class="mt-4 max-w-[48ch] text-base/7 text-pretty text-muted sm:mt-6 sm:text-lg/8 dark:text-mist">
-                  Every step says what it writes before you allow it: the <code class="code">claude</code> shim, two hooks, a status line and
-                  two skills. Skip any you don't want.
+                  Every step says what it writes before you allow it: the <code class="code">claude</code> shim, two hooks, a status line and two
+                  skills. Skip any you don't want.
                 </p>
               </div>
               <div class="reveal relative rounded-3xl bg-ink/4 p-6 pb-28 [--i:1] sm:p-10 sm:pb-40 dark:bg-white/4" x-reveal>
@@ -471,7 +697,7 @@
                     height="534"
                     loading="lazy"
                     alt="The welcome window: what Clauset does, in three points."
-                    class="window w-[78%]"
+                    class="w-[78%] window"
                   />
                 </picture>
                 <picture>
@@ -482,7 +708,7 @@
                     height="406"
                     loading="lazy"
                     alt="The setup window: five steps, each with what it writes and a button."
-                    class="window absolute right-6 bottom-6 w-[70%] sm:right-10 sm:bottom-10"
+                    class="absolute right-6 bottom-6 w-[70%] window sm:right-10 sm:bottom-10"
                   />
                 </picture>
               </div>
@@ -492,11 +718,13 @@
               <div class="reveal lg:order-last lg:pl-16" x-reveal>
                 <h2 class="max-w-[24ch] text-3xl font-semibold tracking-tight text-balance sm:text-4xl lg:text-5xl">No terminal needed.</h2>
                 <p class="mt-4 max-w-[48ch] text-base/7 text-pretty text-muted sm:mt-6 sm:text-lg/8 dark:text-mist">
-                  Adding an account, signing in again and moving sessions all run inside the app. A sign-in opens your browser, and a move asks
-                  first.
+                  Adding an account, signing in again and moving sessions all run inside the app. A sign-in opens your browser, and a move asks first.
                 </p>
               </div>
-              <div class="reveal relative rounded-3xl bg-ink/4 p-6 [--i:1] max-sm:pb-34 sm:flex sm:items-start sm:justify-center sm:gap-6 sm:p-10 dark:bg-white/4" x-reveal>
+              <div
+                class="reveal relative rounded-3xl bg-ink/4 p-6 [--i:1] max-sm:pb-34 sm:flex sm:items-start sm:justify-center sm:gap-6 sm:p-10 dark:bg-white/4"
+                x-reveal
+              >
                 <picture>
                   <source media="(prefers-color-scheme: dark)" srcset="img/add-account-dark.png" />
                   <img
@@ -505,7 +733,7 @@
                     height="294"
                     loading="lazy"
                     alt="The window that names a new account."
-                    class="window w-[62%] sm:w-52"
+                    class="w-[62%] window sm:w-52"
                   />
                 </picture>
                 <picture>
@@ -516,7 +744,7 @@
                     height="314"
                     loading="lazy"
                     alt="The question before a move: three sessions from Work to Personal."
-                    class="window w-[62%] max-sm:absolute max-sm:right-6 max-sm:bottom-6 sm:w-52"
+                    class="w-[62%] window max-sm:absolute max-sm:right-6 max-sm:bottom-6 sm:w-52"
                   />
                 </picture>
               </div>
@@ -526,8 +754,8 @@
               <div class="reveal lg:pr-16" x-reveal>
                 <h2 class="max-w-[24ch] text-3xl font-semibold tracking-tight text-balance sm:text-4xl lg:text-5xl">Updates on your word.</h2>
                 <p class="mt-4 max-w-[48ch] text-base/7 text-pretty text-muted sm:mt-6 sm:text-lg/8 dark:text-mist">
-                  A newer version shows in the menu and no window opens by itself. Choose to install, and the app downloads it from GitHub, checks
-                  its signature and opens again.
+                  A newer version shows in the menu and no window opens by itself. Choose to install, and the app downloads it from GitHub, checks its
+                  signature and opens again.
                 </p>
               </div>
               <div class="reveal flex items-center justify-center rounded-3xl bg-ink/4 p-6 [--i:1] sm:p-10 dark:bg-white/4" x-reveal>
@@ -539,7 +767,7 @@
                     height="249"
                     loading="lazy"
                     alt="The update window: Clauset 1.1 is available, with Later and Install."
-                    class="window w-64"
+                    class="w-64 window"
                   />
                 </picture>
               </div>
@@ -550,34 +778,40 @@
         <section id="shared" class="scroll-mt-16 py-16 sm:py-28">
           <div class="mx-auto max-w-6xl px-6 lg:px-8">
             <div class="reveal" x-reveal>
-              <h2 class="max-w-[24ch] text-3xl font-semibold tracking-tight text-balance sm:text-4xl lg:text-5xl">What's shared, and what stays apart.</h2>
+              <h2 class="max-w-[24ch] text-3xl font-semibold tracking-tight text-balance sm:text-4xl lg:text-5xl">
+                What's shared, and what stays apart.
+              </h2>
               <p class="mt-4 max-w-[56ch] text-base/7 text-pretty text-muted sm:mt-6 sm:text-lg/8 dark:text-mist">
-                Every account reads the same <code class="code">~/.claude</code>. Clauset links it into each account, and leaves apart what Claude Code ties to a
-                sign-in.
+                Every account reads the same <code class="code">~/.claude</code>. Clauset links it into each account, and leaves apart what Claude
+                Code ties to a sign-in.
               </p>
             </div>
             <div
-              class="reveal -mx-6 mt-10 flex snap-x snap-mandatory scroll-px-6 gap-4 overflow-x-auto px-6 py-1 [scrollbar-width:none] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand lg:mx-0 lg:grid lg:grid-cols-2 lg:overflow-visible lg:px-0 [&::-webkit-scrollbar]:hidden"
+              class="reveal -mx-6 mt-10 flex snap-x snap-mandatory scroll-px-6 [scrollbar-width:none] gap-4 overflow-x-auto px-6 py-1 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand lg:mx-0 lg:grid lg:grid-cols-2 lg:overflow-visible lg:px-0 [&::-webkit-scrollbar]:hidden"
               role="group"
               aria-label="What every account shares, and what each keeps"
               tabindex="0"
               x-reveal
             >
-              <div class="card w-[86%] shrink-0 snap-start p-8 sm:w-[70%] sm:p-10 lg:w-auto">
+              <div class="w-[86%] shrink-0 snap-start card p-8 sm:w-[70%] sm:p-10 lg:w-auto">
                 <h3 class="text-lg/7 font-semibold tracking-tight">Shared by every account</h3>
                 <dl class="mt-8 space-y-7 text-base/7">
                   <div class="flex items-start gap-3 sm:gap-4">
                     <svg class="size-6 h-lh shrink-0 fill-brand dark:fill-iris" aria-hidden="true"><use href="img/icons.svg#gear" /></svg>
                     <div>
                       <dt class="text-base/7 font-semibold">Settings and hooks</dt>
-                      <dd class="mt-1 text-base/6 text-pretty text-muted sm:text-sm/6 dark:text-mist">One <code class="code">settings.json</code> for all of them, so a hook runs on every account.</dd>
+                      <dd class="mt-1 text-base/6 text-pretty text-muted sm:text-sm/6 dark:text-mist">
+                        One <code class="code">settings.json</code> for all of them, so a hook runs on every account.
+                      </dd>
                     </div>
                   </div>
                   <div class="flex items-start gap-3 sm:gap-4">
                     <svg class="size-6 h-lh shrink-0 fill-brand dark:fill-iris" aria-hidden="true"><use href="img/icons.svg#file-text" /></svg>
                     <div>
                       <dt class="text-base/7 font-semibold"><code class="code">CLAUDE.md</code> and rules</dt>
-                      <dd class="mt-1 text-base/6 text-pretty text-muted sm:text-sm/6 dark:text-mist">Your instructions read the same wherever a session runs.</dd>
+                      <dd class="mt-1 text-base/6 text-pretty text-muted sm:text-sm/6 dark:text-mist">
+                        Your instructions read the same wherever a session runs.
+                      </dd>
                     </div>
                   </div>
                   <div class="flex items-start gap-3 sm:gap-4">
@@ -591,54 +825,68 @@
                     <svg class="size-6 h-lh shrink-0 fill-brand dark:fill-iris" aria-hidden="true"><use href="img/icons.svg#plugs" /></svg>
                     <div>
                       <dt class="text-base/7 font-semibold">MCP servers</dt>
-                      <dd class="mt-1 text-base/6 text-pretty text-muted sm:text-sm/6 dark:text-mist">The servers you added to <code class="code">~/.claude</code> and to a project reach every account.</dd>
+                      <dd class="mt-1 text-base/6 text-pretty text-muted sm:text-sm/6 dark:text-mist">
+                        The servers you added to <code class="code">~/.claude</code> and to a project reach every account.
+                      </dd>
                     </div>
                   </div>
                   <div class="flex items-start gap-3 sm:gap-4">
                     <svg class="size-6 h-lh shrink-0 fill-brand dark:fill-iris" aria-hidden="true"><use href="img/icons.svg#brain" /></svg>
                     <div>
                       <dt class="text-base/7 font-semibold">Sessions and memory</dt>
-                      <dd class="mt-1 text-base/6 text-pretty text-muted sm:text-sm/6 dark:text-mist">A session started on one account resumes on another, with its history and auto-memory.</dd>
+                      <dd class="mt-1 text-base/6 text-pretty text-muted sm:text-sm/6 dark:text-mist">
+                        A session started on one account resumes on another, with its history and auto-memory.
+                      </dd>
                     </div>
                   </div>
                 </dl>
               </div>
-              <div class="card w-[86%] shrink-0 snap-start p-8 [--i:1] sm:w-[70%] sm:p-10 lg:w-auto">
+              <div class="w-[86%] shrink-0 snap-start card p-8 [--i:1] sm:w-[70%] sm:p-10 lg:w-auto">
                 <h3 class="text-lg/7 font-semibold tracking-tight">Kept per account</h3>
                 <dl class="mt-8 space-y-7 text-base/7">
                   <div class="flex items-start gap-3 sm:gap-4">
                     <svg class="size-6 h-lh shrink-0 fill-brand dark:fill-iris" aria-hidden="true"><use href="img/icons.svg#key" /></svg>
                     <div>
                       <dt class="text-base/7 font-semibold">The sign-in</dt>
-                      <dd class="mt-1 text-base/6 text-pretty text-muted sm:text-sm/6 dark:text-mist">Each account keeps its own, in its own config directory and Keychain item. Clauset reads no token.</dd>
+                      <dd class="mt-1 text-base/6 text-pretty text-muted sm:text-sm/6 dark:text-mist">
+                        Each account keeps its own, in its own config directory and Keychain item. Clauset reads no token.
+                      </dd>
                     </div>
                   </div>
                   <div class="flex items-start gap-3 sm:gap-4">
                     <svg class="size-6 h-lh shrink-0 fill-brand dark:fill-iris" aria-hidden="true"><use href="img/icons.svg#gauge" /></svg>
                     <div>
                       <dt class="text-base/7 font-semibold">Usage limits</dt>
-                      <dd class="mt-1 text-base/6 text-pretty text-muted sm:text-sm/6 dark:text-mist">Each subscription has its own 5-hour and 7-day windows. Clauset shows them side by side.</dd>
+                      <dd class="mt-1 text-base/6 text-pretty text-muted sm:text-sm/6 dark:text-mist">
+                        Each subscription has its own 5-hour and 7-day windows. Clauset shows them side by side.
+                      </dd>
                     </div>
                   </div>
                   <div class="flex items-start gap-3 sm:gap-4">
                     <svg class="size-6 h-lh shrink-0 fill-brand dark:fill-iris" aria-hidden="true"><use href="img/icons.svg#link-simple" /></svg>
                     <div>
                       <dt class="text-base/7 font-semibold">claude.ai connectors</dt>
-                      <dd class="mt-1 text-base/6 text-pretty text-muted sm:text-sm/6 dark:text-mist">Connectors belong to an account's organization, so each account brings its own.</dd>
+                      <dd class="mt-1 text-base/6 text-pretty text-muted sm:text-sm/6 dark:text-mist">
+                        Connectors belong to an account's organization, so each account brings its own.
+                      </dd>
                     </div>
                   </div>
                   <div class="flex items-start gap-3 sm:gap-4">
                     <svg class="size-6 h-lh shrink-0 fill-brand dark:fill-iris" aria-hidden="true"><use href="img/icons.svg#lock-key" /></svg>
                     <div>
                       <dt class="text-base/7 font-semibold">MCP sign-ins</dt>
-                      <dd class="mt-1 text-base/6 text-pretty text-muted sm:text-sm/6 dark:text-mist">A server that signs in with OAuth asks once on each account.</dd>
+                      <dd class="mt-1 text-base/6 text-pretty text-muted sm:text-sm/6 dark:text-mist">
+                        A server that signs in with OAuth asks once on each account.
+                      </dd>
                     </div>
                   </div>
                   <div class="flex items-start gap-3 sm:gap-4">
                     <svg class="size-6 h-lh shrink-0 fill-brand dark:fill-iris" aria-hidden="true"><use href="img/icons.svg#buildings" /></svg>
                     <div>
                       <dt class="text-base/7 font-semibold">Organization policy</dt>
-                      <dd class="mt-1 text-base/6 text-pretty text-muted sm:text-sm/6 dark:text-mist">Policy limits and remote settings come from each account's own organization.</dd>
+                      <dd class="mt-1 text-base/6 text-pretty text-muted sm:text-sm/6 dark:text-mist">
+                        Policy limits and remote settings come from each account's own organization.
+                      </dd>
                     </div>
                   </div>
                 </dl>
@@ -649,8 +897,16 @@
                 The documentation names every file Clauset links and writes. The changelog says what each version changed.
               </p>
               <div class="flex flex-wrap gap-3">
-                <a href="docs/" class="pressable inline-flex items-center justify-center rounded-full bg-ink/6 px-5 py-3 text-base/6 font-medium text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand dark:bg-white/10 dark:text-fog">Read the documentation</a>
-                <a href="changelog/" class="pressable inline-flex items-center justify-center rounded-full bg-ink/6 px-5 py-3 text-base/6 font-medium text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand dark:bg-white/10 dark:text-fog">See the changelog</a>
+                <a
+                  href="docs/"
+                  class="inline-flex pressable items-center justify-center rounded-full bg-ink/6 px-5 py-3 text-base/6 font-medium text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand dark:bg-white/10 dark:text-fog"
+                  >Read the documentation</a
+                >
+                <a
+                  href="changelog/"
+                  class="inline-flex pressable items-center justify-center rounded-full bg-ink/6 px-5 py-3 text-base/6 font-medium text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand dark:bg-white/10 dark:text-fog"
+                  >See the changelog</a
+                >
               </div>
             </div>
           </div>
@@ -708,24 +964,23 @@
                 <svg class="size-7 fill-brand dark:fill-iris" aria-hidden="true"><use href="img/icons.svg#magic-wand" /></svg>
                 <dt class="mt-4 text-base/7 font-semibold">Two skills</dt>
                 <dd class="mt-1 text-base/6 text-pretty text-muted sm:text-sm/6 dark:text-mist">
-                  <code class="code">/clauset</code> runs Clauset inside a session. <code class="code">accounts</code> tells Claude what
-                  each command does and which ones wait for your word.
+                  <code class="code">/clauset</code> runs Clauset inside a session. <code class="code">accounts</code> tells Claude what each command
+                  does and which ones wait for your word.
                 </dd>
               </div>
               <div>
                 <svg class="size-7 fill-brand dark:fill-iris" aria-hidden="true"><use href="img/icons.svg#folder-open" /></svg>
                 <dt class="mt-4 text-base/7 font-semibold">A directory you already use</dt>
                 <dd class="mt-1 text-base/6 text-pretty text-muted sm:text-sm/6 dark:text-mist">
-                  <code class="code">clauset add --dir</code> takes in a config directory from another tool. Its sessions, memory and skills
-                  join the rest.
+                  <code class="code">clauset add --dir</code> takes in a config directory from another tool. Its sessions, memory and skills join the
+                  rest.
                 </dd>
               </div>
               <div>
                 <svg class="size-7 fill-brand dark:fill-iris" aria-hidden="true"><use href="img/icons.svg#robot" /></svg>
                 <dt class="mt-4 text-base/7 font-semibold">For tools that start agents</dt>
                 <dd class="mt-1 text-base/6 text-pretty text-muted sm:text-sm/6 dark:text-mist">
-                  <code class="code">clauset run &lt;account&gt;</code> starts Claude Code on one account, from a terminal or a tool such as
-                  Solo.
+                  <code class="code">clauset run &lt;account&gt;</code> starts Claude Code on one account, from a terminal or a tool such as Solo.
                 </dd>
               </div>
               <div>
@@ -758,8 +1013,8 @@
             <div class="reveal lg:pr-16" x-reveal>
               <h2 class="max-w-[24ch] text-3xl font-semibold tracking-tight text-balance sm:text-4xl lg:text-5xl">The CLI behind the menu.</h2>
               <p class="mt-4 max-w-[48ch] text-base/7 text-pretty text-muted sm:mt-6 sm:text-lg/8 dark:text-mist">
-                The app reads and changes everything through <code class="code">clauset</code>, and the CLI works without the app. Inside
-                a session, <code class="code">clauset switch work</code> moves it to another account.
+                The app reads and changes everything through <code class="code">clauset</code>, and the CLI works without the app. Inside a session,
+                <code class="code">clauset switch work</code> moves it to another account.
               </p>
               <p class="mt-8 text-base/7 text-muted sm:text-sm/6 dark:text-mist">To install the CLI without the app:</p>
               <div class="term mt-3 max-w-full" x-data="{ tab: 'homebrew' }">
@@ -784,28 +1039,36 @@
                   >
                     <img src="img/cargo.png" alt="" width="22" height="20" class="h-5 w-auto" />Cargo
                   </button>
-                  <button type="button" class="copy ml-auto" data-copy="brew install mischasigtermans/tap/clauset-cli &amp;&amp; clauset setup" :data-copy="$refs[tab].dataset.line" x-data="copy" :data-saying="saying" @click="run()">
-                    <span><svg aria-hidden="true"><use href="img/icons.svg#copy" /></svg>Copy</span><span aria-live="polite" x-text="said"></span>
+                  <button
+                    type="button"
+                    class="copy ml-auto"
+                    data-copy="brew install mischasigtermans/tap/clauset-cli &amp;&amp; clauset setup"
+                    :data-copy="$refs[tab].dataset.line"
+                    x-data="copy"
+                    :data-saying="saying"
+                    @click="run()"
+                  >
+                    <span
+                      ><svg aria-hidden="true"><use href="img/icons.svg#copy" /></svg>Copy</span
+                    ><span aria-live="polite" x-text="said"></span>
                   </button>
                 </div>
                 <pre
-                  class="min-h-24 pt-3 whitespace-pre-wrap wrap-anywhere max-sm:px-3 max-sm:text-[0.6875rem]"
+                  class="min-h-24 pt-3 wrap-anywhere whitespace-pre-wrap max-sm:px-3 max-sm:text-[0.6875rem]"
                   x-ref="homebrew"
                   data-line="brew install mischasigtermans/tap/clauset-cli &amp;&amp; clauset setup"
                   :hidden="tab !== 'homebrew'"
                 ><span class="dim">$</span> brew install <span class="whitespace-nowrap">mischasigtermans/tap/clauset-cli</span>
 <span class="dim">$</span> clauset setup</pre>
                 <pre
-                  class="min-h-24 pt-3 whitespace-pre-wrap wrap-anywhere max-sm:px-3 max-sm:text-[0.6875rem]"
+                  class="min-h-24 pt-3 wrap-anywhere whitespace-pre-wrap max-sm:px-3 max-sm:text-[0.6875rem]"
                   x-ref="cargo"
-                  data-line="cargo install --locked --git https://github.com/mischasigtermans/clauset &amp;&amp; clauset setup"
+                  data-line="cargo install --locked clauset &amp;&amp; clauset setup"
                   hidden
                   :hidden="tab !== 'cargo'"
-                ><span class="dim">$</span> cargo install --locked --git \
-https://github.com/mischasigtermans/clauset
+                ><span class="dim">$</span> cargo install --locked clauset
 <span class="dim">$</span> clauset setup</pre>
               </div>
-              
             </div>
             <div class="reveal term [--i:1]" x-reveal>
               <div class="term-bar" aria-hidden="true"><i></i><i></i><i></i></div>
@@ -862,8 +1125,8 @@ https://github.com/mischasigtermans/clauset
               <div class="lg:pr-12">
                 <dt class="text-lg/7 font-semibold tracking-tight">Does Clauset read my tokens or send data anywhere?</dt>
                 <dd class="mt-2 max-w-[56ch] text-base/7 text-pretty text-muted dark:text-mist">
-                  It reads no token, and the CLI makes no network call. Only the official <code class="code">claude</code> binary talks to Anthropic. The app asks before
-                  it goes online, then checks GitHub for a newer version once a week.
+                  It reads no token, and the CLI makes no network call. Only the official <code class="code">claude</code> binary talks to Anthropic.
+                  The app asks before it goes online, then checks GitHub for a newer version once a week.
                 </dd>
               </div>
               <div class="lg:pr-12">
@@ -878,34 +1141,42 @@ https://github.com/mischasigtermans/clauset
 
         <section class="pt-10 pb-20">
           <div class="mx-auto max-w-6xl px-6 lg:px-8">
-          <div class="reveal relative overflow-hidden rounded-3xl bg-ink/4 outline-1 -outline-offset-1 outline-black/10 dark:bg-white/4 dark:outline-white/10" x-reveal>
-            <!-- The cards keep to the right of the text: the picture is drawn larger from its left edge, and on a phone it sits under the text. -->
-            <picture>
-              <source media="(prefers-color-scheme: dark)" srcset="img/scene-dark.jpg" />
-              <img src="img/scene-light.jpg" alt="" loading="lazy" class="absolute inset-x-0 bottom-0 h-72 w-full mask-t-from-55% object-cover object-right lg:inset-0 lg:h-full lg:origin-left lg:scale-135 lg:mask-none" />
-            </picture>
-            <div class="relative px-6 pt-14 pb-72 sm:px-16 lg:py-28">
-              <img src="img/icon.png" alt="" class="size-16" />
-              <h2 class="mt-8 max-w-[24ch] text-3xl font-semibold tracking-tight text-balance sm:text-4xl lg:text-5xl">Download Clauset.</h2>
-              <p class="mt-4 max-w-[36ch] text-base/7 text-pretty text-muted sm:mt-6 sm:text-lg/8 dark:text-mist">
-                Clauset is free and open source. It needs macOS 14.4 or later and Claude Code, signed in to at least one account.
-              </p>
-              <div class="mt-10 flex flex-wrap items-center gap-x-8 gap-y-4">
-                <a
-                  href="https://github.com/mischasigtermans/clauset/releases/latest/download/Clauset.dmg"
-                  class="pressable inline-flex items-center justify-center gap-2 rounded-full bg-brand py-3.5 pr-6 pl-4 text-base/6 font-medium text-white shadow-[0_10px_30px_-8px] shadow-brand/60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
-                  ><svg class="size-5 fill-current" aria-hidden="true"><use href="img/icons.svg#download-simple" /></svg>Download for macOS</a
-                >
-                <a
-                  href="https://github.com/mischasigtermans/clauset"
-                  target="_blank"
-                  rel="noopener"
-                  class="inline-flex items-center gap-2 text-base/6 font-medium text-ink underline-offset-4 hover:underline dark:text-fog"
-                  ><svg class="size-5 fill-current" aria-hidden="true"><use href="img/icons.svg#star" /></svg>Star Clauset on GitHub</a
-                >
+            <div
+              class="reveal relative overflow-hidden rounded-3xl bg-ink/4 outline-1 -outline-offset-1 outline-black/10 dark:bg-white/4 dark:outline-white/10"
+              x-reveal
+            >
+              <!-- The cards keep to the right of the text: the picture is drawn larger from its left edge, and on a phone it sits under the text. -->
+              <picture>
+                <source media="(prefers-color-scheme: dark)" srcset="img/scene-dark.jpg" />
+                <img
+                  src="img/scene-light.jpg"
+                  alt=""
+                  loading="lazy"
+                  class="absolute inset-x-0 bottom-0 h-72 w-full mask-t-from-55% object-cover object-right lg:inset-0 lg:h-full lg:origin-left lg:scale-135 lg:mask-none"
+                />
+              </picture>
+              <div class="relative px-6 pt-14 pb-72 sm:px-16 lg:py-28">
+                <img src="img/icon.png" alt="" class="size-16" />
+                <h2 class="mt-8 max-w-[24ch] text-3xl font-semibold tracking-tight text-balance sm:text-4xl lg:text-5xl">Download Clauset.</h2>
+                <p class="mt-4 max-w-[36ch] text-base/7 text-pretty text-muted sm:mt-6 sm:text-lg/8 dark:text-mist">
+                  Clauset is free and open source. It needs macOS 14.4 or later and Claude Code, signed in to at least one account.
+                </p>
+                <div class="mt-10 flex flex-wrap items-center gap-x-8 gap-y-4">
+                  <a
+                    href="https://github.com/mischasigtermans/clauset/releases/latest/download/Clauset.dmg"
+                    class="inline-flex pressable items-center justify-center gap-2 rounded-full bg-brand py-3.5 pr-6 pl-4 text-base/6 font-medium text-white shadow-[0_10px_30px_-8px] shadow-brand/60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+                    ><svg class="size-5 fill-current" aria-hidden="true"><use href="img/icons.svg#download-simple" /></svg>Download for macOS</a
+                  >
+                  <a
+                    href="https://github.com/mischasigtermans/clauset"
+                    target="_blank"
+                    rel="noopener"
+                    class="inline-flex items-center gap-2 text-base/6 font-medium text-ink underline-offset-4 hover:underline dark:text-fog"
+                    ><svg class="size-5 fill-current" aria-hidden="true"><use href="img/icons.svg#star" /></svg>Star Clauset on GitHub</a
+                  >
+                </div>
               </div>
             </div>
-          </div>
           </div>
         </section>
       </main>
@@ -919,31 +1190,35 @@ https://github.com/mischasigtermans/clauset
                 <span class="text-base font-semibold tracking-tight">Clauset</span>
               </a>
               <p class="mt-4 max-w-[56ch] text-base/6 text-pretty text-muted sm:text-sm/6 dark:text-mist">
-                Clauset rests on behaviour Claude Code doesn't document, and is tested on Claude Code 2.1.322. It's an independent project, not
-                made or endorsed by Anthropic.
+                Clauset rests on behaviour Claude Code doesn't document, and is tested on Claude Code 2.1.322. It's an independent project, not made
+                or endorsed by Anthropic.
               </p>
               <p class="mt-4 text-base/6 text-muted sm:text-sm/6 dark:text-mist">
                 © 2026 Hold My Beer B.V. Made by
-                <a href="https://mischa.sigtermans.me" target="_blank" rel="noopener" class="font-medium text-ink underline underline-offset-4 dark:text-fog">Mischa Sigtermans</a>.
+                <a
+                  href="https://mischa.sigtermans.me"
+                  target="_blank"
+                  rel="noopener"
+                  class="font-medium text-ink underline underline-offset-4 dark:text-fog"
+                  >Mischa Sigtermans</a
+                >. <a href="privacy/" class="font-medium text-ink underline underline-offset-4 dark:text-fog">Privacy</a>.
               </p>
             </div>
             <ul role="list" class="flex flex-wrap gap-x-8 gap-y-3">
               <li>
-                <a href="https://github.com/mischasigtermans/clauset" target="_blank" rel="noopener" class="text-base/7 text-muted hover:text-ink sm:text-sm/6 dark:text-mist dark:hover:text-fog">GitHub</a>
-              </li>
-              <li>
                 <a
-                  href="changelog/"
+                  href="https://github.com/mischasigtermans/clauset"
+                  target="_blank"
+                  rel="noopener"
                   class="text-base/7 text-muted hover:text-ink sm:text-sm/6 dark:text-mist dark:hover:text-fog"
-                  >Changelog</a
+                  >GitHub</a
                 >
               </li>
               <li>
-                <a
-                  href="docs/"
-                  class="text-base/7 text-muted hover:text-ink sm:text-sm/6 dark:text-mist dark:hover:text-fog"
-                  >Documentation</a
-                >
+                <a href="changelog/" class="text-base/7 text-muted hover:text-ink sm:text-sm/6 dark:text-mist dark:hover:text-fog">Changelog</a>
+              </li>
+              <li>
+                <a href="docs/" class="text-base/7 text-muted hover:text-ink sm:text-sm/6 dark:text-mist dark:hover:text-fog">Documentation</a>
               </li>
               <li>
                 <a href="licence/" class="text-base/7 text-muted hover:text-ink sm:text-sm/6 dark:text-mist dark:hover:text-fog">Licence</a>
