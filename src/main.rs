@@ -9,7 +9,7 @@ use console::style;
 
 use clauset::config::{self, Choice, Config, MARKER, Session};
 use clauset::edit::ConfigFile;
-use clauset::{account, doctor, hook, launch, link, setup, status, switch, usage};
+use clauset::{account, doctor, hook, launch, link, notify, setup, status, switch, usage};
 
 #[derive(Parser)]
 #[command(
@@ -27,7 +27,11 @@ struct Cli {
 enum Cmd {
     /// The account here, and every account with its plan and usage
     #[command(visible_alias = "usage")]
-    Status,
+    Status {
+        /// As JSON, for a program to read
+        #[arg(long)]
+        json: bool,
+    },
     /// Make an account the one new sessions start on
     Use { account: String },
     /// Warn when an account passes a percent of its 5-hour or 7-day limit, or `off`
@@ -38,7 +42,9 @@ enum Cmd {
         #[arg(long)]
         account: Option<String>,
     },
-    /// Move this Claude Code session to another account once its turn ends, and start new sessions there: `! clauset switch <account>`
+    /// Name the account the Claude in Chrome extension is signed in to, which every other account reaches it through, or `off`
+    Chrome { account: String },
+    /// Move this Claude Code session to another account once its turn ends: `! clauset switch <account>`
     Switch {
         account: String,
         /// Move every session on the account this one runs on, not only this one
@@ -64,10 +70,22 @@ enum Cmd {
         #[arg(long)]
         dir: Option<PathBuf>,
     },
+    /// Take an account out of the config, leaving its directory and sign-in
+    Remove { account: String },
     /// Sign an account in again
     Login { account: String },
     /// Set everything up, asking about what is missing
-    Setup,
+    Setup {
+        /// What each step still needs, as JSON, for a program to read
+        #[arg(long, conflicts_with = "apply")]
+        json: bool,
+        /// Carry out one step without asking
+        #[arg(long, value_enum)]
+        apply: Option<setup::Step>,
+        /// With `--apply skills`: write this version's over a skill that differs, too
+        #[arg(long, requires = "apply")]
+        replace: bool,
+    },
     /// Check the accounts, their sign-ins and links
     Doctor,
     /// Which account `claude` starts on here, and why
@@ -130,7 +148,7 @@ fn run(cli: Cli) -> Result<ExitCode> {
     let home = config::home()?;
     let config_dir = env::var_os("CLAUDE_CONFIG_DIR");
     let marked = env::var_os(MARKER).is_some();
-    let command = cli.command.unwrap_or(Cmd::Status);
+    let command = cli.command.unwrap_or(Cmd::Status { json: false });
 
     // These run inside Claude Code: without a config file they stay silent.
     if matches!(command, Cmd::Statusline | Cmd::Hook { .. } | Cmd::Whoami) {
@@ -151,7 +169,7 @@ fn run(cli: Cli) -> Result<ExitCode> {
                 if let Some(text) =
                     hook::limit(&config, &input, config_dir.as_deref(), chrono::Local::now())
                 {
-                    notify(&text);
+                    notify::send(&config, &text);
                 }
                 None
             }
@@ -168,8 +186,19 @@ fn run(cli: Cli) -> Result<ExitCode> {
     }
 
     match command {
-        Cmd::Setup => {
-            setup::run(&home)?;
+        Cmd::Setup {
+            json,
+            apply,
+            replace,
+        } => {
+            if replace && !matches!(apply, Some(setup::Step::Skills)) {
+                anyhow::bail!("--replace goes with `--apply skills`");
+            }
+            match apply {
+                Some(step) => println!("{}", setup::apply(&home, step, replace)?),
+                None if json => println!("{}", setup::state(&home)?),
+                None => setup::run(&home)?,
+            }
             return Ok(ExitCode::SUCCESS);
         }
         Cmd::Init => {
@@ -177,7 +206,7 @@ fn run(cli: Cli) -> Result<ExitCode> {
             println!(
                 "{} → {}",
                 bin.join("claude").display(),
-                env::current_exe()?.canonicalize()?.display()
+                account::exe(&home)?.display()
             );
             println!(
                 "Put this line last in ~/.zshrc, so the shim comes before every other `claude` on PATH:"
@@ -232,17 +261,44 @@ fn run(cli: Cli) -> Result<ExitCode> {
             }
             return Ok(ExitCode::SUCCESS);
         }
+        Cmd::Chrome { account } => {
+            let account = (account != "off").then_some(account);
+            let mut file = ConfigFile::open(&home)?;
+            if let Some(name) = &account
+                && !file.has_account(name)
+            {
+                anyhow::bail!("no account named `{name}`");
+            }
+            file.set_chrome(account.as_deref());
+            file.save()?;
+            match account {
+                Some(name) => println!(
+                    "Every account reaches Claude in Chrome through {name}, in sessions started from now on"
+                ),
+                None => println!(
+                    "Each account uses Claude in Chrome on its own sign-in, in sessions started from now on"
+                ),
+            }
+            return Ok(ExitCode::SUCCESS);
+        }
         _ => {}
     }
 
     let Some(config) = Config::load_if_present(&home)? else {
+        if matches!(command, Cmd::Status { json: true }) {
+            anyhow::bail!("no accounts yet: run `clauset setup`");
+        }
         println!("No accounts yet. Run `clauset setup`.");
         return Ok(ExitCode::SUCCESS);
     };
 
     match command {
-        Cmd::Status => {
+        Cmd::Status { json: false } => {
             status::print(&config, &directory(None)?, config_dir.as_deref(), marked);
+            Ok(ExitCode::SUCCESS)
+        }
+        Cmd::Status { json: true } => {
+            println!("{}", status::json(&config, config_dir.as_deref(), marked));
             Ok(ExitCode::SUCCESS)
         }
         Cmd::Run { account, args } => {
@@ -257,6 +313,10 @@ fn run(cli: Cli) -> Result<ExitCode> {
                 switch::request(&config, &account)?
             };
             println!("{said}");
+            Ok(ExitCode::SUCCESS)
+        }
+        Cmd::Remove { account } => {
+            println!("{}", remove(&config, &account)?);
             Ok(ExitCode::SUCCESS)
         }
         Cmd::Login { account } => {
@@ -305,22 +365,39 @@ fn run(cli: Cli) -> Result<ExitCode> {
     }
 }
 
-/// A macOS notification; the text goes in as an argument, so it needs no quoting.
-fn notify(text: &str) {
-    let _ = std::process::Command::new("osascript")
-        .args([
-            "-e",
-            "on run argv",
-            "-e",
-            "display notification (item 1 of argv) with title \"clauset\"",
-            "-e",
-            "end run",
-            text,
-        ])
-        .status();
+fn remove(config: &Config, name: &str) -> Result<String> {
+    let account = config.account(name)?;
+    if config.default == name {
+        anyhow::bail!("{name} is the default: `clauset use <account>` picks another first");
+    }
+    if config.chrome.as_deref() == Some(name) {
+        anyhow::bail!("`chrome` names {name}: `clauset chrome <account|off>` changes it first");
+    }
+    if config.is_hub(account) {
+        anyhow::bail!(
+            "{name} is the hub, the account ~/.claude is signed in to and every other account shares from: it stays"
+        );
+    }
+    if let Some(&sessions) = switch::sessions_per_account(config).get(name) {
+        let run = if sessions == 1 {
+            "1 session runs".to_owned()
+        } else {
+            format!("{sessions} sessions run")
+        };
+        anyhow::bail!(
+            "{run} on {name}: end them, or move them with `clauset switch <account> --all --from {name}`"
+        );
+    }
+    let dir = config.tilde(&account.dir);
+    let mut file = ConfigFile::open(&config.home)?;
+    file.remove_account(name);
+    file.save()?;
+    usage::forget(config, name);
+    Ok(format!(
+        "{name} is no longer an account. Its directory {dir} and its sign-in stay: `clauset add {name} --dir {dir}` takes it back."
+    ))
 }
 
-/// `dir`, or the current directory, resolved.
 fn directory(dir: Option<PathBuf>) -> Result<PathBuf> {
     let dir = env::current_dir()?.join(dir.unwrap_or_default());
     dir.canonicalize()
@@ -347,10 +424,14 @@ fn statusline(
                     .and_then(|at| chrono::TimeZone::timestamp_opt(&chrono::Local, at, 0).single())
                     .map(|reset| format!(", resets {}", status::when(reset, now)))
                     .unwrap_or_default();
-                notify(&format!(
-                    "{name} is at {:.0}% of its {label} limit{reset}",
-                    window.percent
-                ));
+                notify::send(
+                    config,
+                    &format!(
+                        "{} is at {:.0}% of its {label} limit{reset}",
+                        notify::title(name),
+                        window.percent
+                    ),
+                );
             }
         }
     }

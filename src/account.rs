@@ -1,6 +1,3 @@
-//! Adding accounts: signing a new one in, or taking in a config dir that
-//! already exists.
-
 use std::env;
 use std::fs;
 use std::os::unix::fs::symlink;
@@ -11,7 +8,7 @@ use anyhow::{Context, Result, bail};
 use crate::config::{Config, same};
 use crate::edit::ConfigFile;
 use crate::state::{self, SignIn};
-use crate::{launch, link};
+use crate::{launch, link, switch};
 
 pub fn valid_name(name: &str) -> Result<()> {
     let mut chars = name.chars();
@@ -22,13 +19,14 @@ pub fn valid_name(name: &str) -> Result<()> {
     if !ok {
         bail!("`{name}` is no account name: use lowercase letters, digits, - and _");
     }
+    if name == "off" {
+        bail!(
+            "`off` is no account name: `clauset chrome off` and `clauset warn off` read it as a word of their own"
+        );
+    }
     Ok(())
 }
 
-/// Adds an account to the config. A directory that exists, other than the
-/// hub, is taken in first: its own entries fold into the hub before they
-/// become links. Without a sign-in it then gets one through `claude auth
-/// login`.
 pub fn add(home: &Path, name: &str, email: Option<&str>, dir: Option<&Path>) -> Result<()> {
     valid_name(name)?;
     let mut file = ConfigFile::open(home)?;
@@ -135,8 +133,7 @@ pub fn describe(report: &link::Report) -> String {
     }
 }
 
-/// Fills in what the hub has answered and the account lacks; returns whether
-/// the account's state changed.
+/// Returns whether the account's state changed.
 pub fn seed(config: &Config, name: &str) -> Result<bool> {
     let account = config.account(name)?;
     if config.is_hub(account) {
@@ -156,23 +153,31 @@ pub fn seed(config: &Config, name: &str) -> Result<bool> {
     Ok(changed)
 }
 
-/// Prepares an account's directory and signs it in. Signing the hub in again
-/// would change the account under every session running on it, so the hub is
-/// left to `claude auth login`.
+/// Signing the hub in again changes the account under every session running
+/// on it, so the hub signs in only once none does.
 pub fn login(config: &Config, name: &str) -> Result<SignIn> {
     let account = config.account(name)?;
     if config.is_hub(account) {
-        bail!(
-            "{name} is the hub: signing it in again changes the account of every session running on it. \
-             Run `claude auth login` yourself if that is what you want."
-        );
-    }
-    fs::create_dir_all(&account.dir)
-        .with_context(|| format!("creating {}", account.dir.display()))?;
-    let report = link::sync(&config.hub(), &account.dir, true)?;
-    println!("{name}: {}", describe(&report));
-    if seed(config, name)? {
-        println!("{name}: copied onboarding, answered dialogs and project trust from the hub");
+        let sessions = switch::sessions_on_hub(config, name);
+        if sessions > 0 {
+            let run = if sessions == 1 {
+                "1 session runs".to_owned()
+            } else {
+                format!("{sessions} sessions run")
+            };
+            bail!(
+                "{run} on {name}, the hub: signing it in again changes their account. \
+                 End them first; `clauset switch <account> --all --from {name}` moves the ones clauset started."
+            );
+        }
+    } else {
+        fs::create_dir_all(&account.dir)
+            .with_context(|| format!("creating {}", account.dir.display()))?;
+        let report = link::sync(&config.hub(), &account.dir, true)?;
+        println!("{name}: {}", describe(&report));
+        if seed(config, name)? {
+            println!("{name}: copied onboarding, answered dialogs and project trust from the hub");
+        }
     }
 
     let claude = launch::real_claude()?;
@@ -203,20 +208,41 @@ pub fn login(config: &Config, name: &str) -> Result<SignIn> {
     Ok(sign_in)
 }
 
-/// Links the shim to this binary; returns the directory it lives in.
-pub fn init(home: &Path) -> Result<PathBuf> {
-    let bin = Config::path(home)
+fn bin(home: &Path) -> Result<PathBuf> {
+    Ok(Config::path(home)
         .parent()
         .context("the config path has no directory")?
-        .join("bin");
+        .join("bin"))
+}
+
+/// The path this binary was started from, which lasts where the file behind
+/// it may not: Homebrew links `bin/clauset` into a folder named for the
+/// version, and deletes that folder on the next upgrade. Started through a
+/// link in the shim's directory, it is what that link points to.
+pub fn exe(home: &Path) -> Result<PathBuf> {
+    let started = env::current_exe()?;
+    if !started.is_absolute() {
+        return Ok(started.canonicalize()?);
+    }
+    let bin = bin(home)?;
+    if started.parent().is_some_and(|dir| same(dir, &bin)) {
+        return fs::read_link(&started).with_context(|| format!("reading {}", started.display()));
+    }
+    Ok(started)
+}
+
+pub fn init(home: &Path) -> Result<PathBuf> {
+    let bin = bin(home)?;
     fs::create_dir_all(&bin).with_context(|| format!("creating {}", bin.display()))?;
-    let exe = env::current_exe()?.canonicalize()?;
-    let shim = bin.join("claude");
-    if fs::read_link(&shim).ok().as_deref() != Some(exe.as_path()) {
-        if fs::symlink_metadata(&shim).is_ok() {
-            fs::remove_file(&shim).with_context(|| format!("replacing {}", shim.display()))?;
+    let exe = exe(home)?;
+    for name in ["claude", "clauset"] {
+        let link = bin.join(name);
+        if fs::read_link(&link).ok().as_deref() != Some(exe.as_path()) {
+            if fs::symlink_metadata(&link).is_ok() {
+                fs::remove_file(&link).with_context(|| format!("replacing {}", link.display()))?;
+            }
+            symlink(&exe, &link).with_context(|| format!("linking {}", link.display()))?;
         }
-        symlink(&exe, &shim).with_context(|| format!("linking {}", shim.display()))?;
     }
     Ok(bin)
 }
@@ -230,7 +256,7 @@ mod tests {
         for name in ["ultra-work", "team_2", "a"] {
             assert!(valid_name(name).is_ok(), "{name}");
         }
-        for name in ["", "Ultra", "-x", "a b", "a/b"] {
+        for name in ["", "Ultra", "-x", "a b", "a/b", "off"] {
             assert!(valid_name(name).is_err(), "{name}");
         }
     }

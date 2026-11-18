@@ -1,8 +1,8 @@
-//! Moving a running session to another account. A Claude Code process keeps
-//! the config dir it started with, so a session moves by ending once its turn
-//! is over and resuming on the other account, in the same terminal, under the
-//! supervisor that started it.
+//! A Claude Code process keeps the config dir it started with, so a session
+//! moves by ending once its turn is over and resuming on the other account,
+//! in the same terminal, under the supervisor that started it.
 
+use std::collections::BTreeMap;
 use std::ffi::{OsStr, OsString};
 use std::fs;
 use std::path::{Path, PathBuf};
@@ -17,7 +17,6 @@ use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
 use crate::config::{Config, Session};
-use crate::edit::ConfigFile;
 use crate::state;
 
 /// Set on the `claude` a supervisor runs: the supervisor's pid.
@@ -106,7 +105,6 @@ fn note_path(config: &Config, child: u32) -> Option<PathBuf> {
     )
 }
 
-/// Notes that this process supervises `child` on `account`.
 pub fn note(config: &Config, child: u32, account: &str) -> Result<()> {
     let path = note_path(config, child).context("the config path has no directory")?;
     fs::create_dir_all(path.parent().expect("joined above"))?;
@@ -123,7 +121,6 @@ pub fn forget(config: &Config, child: u32) {
     }
 }
 
-/// The account `pid` runs on, when a supervisor still runs it.
 fn supervised_on(config: &Config, pid: u32) -> Option<String> {
     let path = note_path(config, pid)?;
     let note: Supervised = serde_json::from_str(&fs::read_to_string(path).ok()?).ok()?;
@@ -146,7 +143,6 @@ fn started(pid: u32, c_locale: bool) -> Option<String> {
     Some(text.split_whitespace().collect::<Vec<_>>().join(" "))
 }
 
-/// A live Claude Code session from the hub's registry.
 struct Running {
     pid: u32,
     session_id: String,
@@ -157,7 +153,6 @@ struct Running {
     account: Option<String>,
 }
 
-/// The terminal sessions the hub's registry lists whose process still runs.
 /// An entry whose pid now belongs to a process started at another time is
 /// left out.
 fn running(config: &Config) -> Vec<Running> {
@@ -200,20 +195,38 @@ fn running(config: &Config) -> Vec<Running> {
     sessions
 }
 
-/// Makes `account` the one new sessions start on.
-fn make_default(config: &Config, account: &str) -> Result<()> {
-    if config.default == account {
-        return Ok(());
+/// How many sessions each account's supervisors run: the ones `switch --all`
+/// can move.
+pub fn sessions_per_account(config: &Config) -> BTreeMap<String, usize> {
+    let mut counts = BTreeMap::new();
+    for account in running(config)
+        .into_iter()
+        .filter_map(|session| session.account)
+    {
+        *counts.entry(account).or_default() += 1;
     }
-    let mut file = ConfigFile::open(&config.home)?;
-    file.set_default(account);
-    file.save()?;
-    Ok(())
+    counts
 }
 
-/// Asks the supervisor of the enclosing session to move it to `account`,
-/// and makes `account` the default; returns what to tell the person. A
-/// refused request leaves the default as it was.
+/// How many sessions run on the hub, named `hub`: the ones its supervisors
+/// run, and every session without a supervisor. clauset can't tell the
+/// account of those, and the hub is where a `claude` started outside it runs.
+pub fn sessions_on_hub(config: &Config, hub: &str) -> usize {
+    running(config)
+        .into_iter()
+        .filter(|session| session.account.as_deref().is_none_or(|on| on == hub))
+        .count()
+}
+
+/// What to say about new sessions after a move away from `leaving`. A move
+/// touches running sessions alone, so leaving the default account leaves
+/// new sessions starting there: `use` is what changes that.
+fn new_sessions(default: &str, leaving: &str, account: &str) -> Option<String> {
+    (default == leaving).then(|| {
+        format!("New sessions still start on {leaving}: `clauset use {account}` changes that.")
+    })
+}
+
 pub fn request(config: &Config, account: &str) -> Result<String> {
     config.account(account)?;
     // Claude Code gives the processes its tools start its own pid and session.
@@ -229,17 +242,13 @@ pub fn request(config: &Config, account: &str) -> Result<String> {
         Session::Account(name) => Some(name),
         _ => None,
     };
-    let new_sessions = format!("New sessions start on {account} too.");
     if leaving == Some(account) {
-        make_default(config, account)?;
         let cancelled =
             request_path(config, claude).is_some_and(|path| fs::remove_file(path).is_ok());
         return Ok(if cancelled {
-            format!(
-                "This session already runs on {account}; the move it asked for is cancelled. {new_sessions}"
-            )
+            format!("This session already runs on {account}; the move it asked for is cancelled.")
         } else {
-            format!("This session already runs on {account}. {new_sessions}")
+            format!("This session already runs on {account}.")
         });
     }
     let supervised = std::env::var(SUPERVISOR)
@@ -251,7 +260,6 @@ pub fn request(config: &Config, account: &str) -> Result<String> {
             "This session runs without clauset's supervisor, so it cannot move in place: end it and run `clauset run {account} --resume {session_id}`"
         );
     }
-    make_default(config, account)?;
     let path = request_path(config, claude).context("the config path has no directory")?;
     fs::create_dir_all(path.parent().expect("joined above"))?;
     let request = Request {
@@ -272,16 +280,18 @@ pub fn request(config: &Config, account: &str) -> Result<String> {
     let cancel = leaving
         .map(|name| format!(" `clauset switch {name}` cancels the move."))
         .unwrap_or_default();
+    let new_sessions = leaving
+        .and_then(|name| new_sessions(&config.default, name, account))
+        .map(|line| format!(" {line}"))
+        .unwrap_or_default();
     Ok(format!(
-        "This session moves to {account} {when}: it closes here and resumes on {account} in this terminal.{cancel} Background agents and teammates of this session end with it. The first turn there reads the whole conversation again, without the thinking from the other organization. {new_sessions}"
+        "This session moves to {account} {when}: it closes here and resumes on {account} in this terminal.{cancel} Background agents and teammates of this session end with it. The first turn there reads the whole conversation again, without the thinking from the other organization.{new_sessions}"
     ))
 }
 
-/// Asks the supervisor of every session on the account being left to move
-/// it to `account`, and makes `account` the default when one will move;
-/// returns what to tell the person. The account being left is `from`, else
-/// the one the enclosing session runs on. A session waiting to move gets its
-/// request written again, so a second call changes nothing but the target.
+/// The account being left is `from`, else the one the enclosing session runs
+/// on. A session waiting to move gets its request written again, so a second
+/// call changes nothing but the target.
 pub fn request_all(config: &Config, account: &str, from: Option<&str>) -> Result<String> {
     config.account(account)?;
     let here = std::env::var("CLAUDE_PID")
@@ -334,7 +344,6 @@ pub fn request_all(config: &Config, account: &str, from: Option<&str>) -> Result
     };
     let mut lines = Vec::new();
     if !moving.is_empty() {
-        make_default(config, account)?;
         lines.push(format!(
             "These move from {leaving} to {account}, each closing and resuming in its own terminal once its turn ends and its background shells have stopped:"
         ));
@@ -383,8 +392,9 @@ pub fn request_all(config: &Config, account: &str, from: Option<&str>) -> Result
         ));
     } else {
         lines.push(format!(
-            "Background agents and teammates of a session end with it. The first turn on {account} reads each conversation again, without the thinking from the other organization. New sessions start on {account} too."
+            "Background agents and teammates of a session end with it. The first turn on {account} reads each conversation again, without the thinking from the other organization."
         ));
+        lines.extend(new_sessions(&config.default, leaving, account));
     }
     Ok(lines.join("\n"))
 }
@@ -426,7 +436,6 @@ pub fn watch(config: &Config, child: u32, done: Arc<AtomicBool>) -> Option<JoinH
     }))
 }
 
-/// The request for `child`, removed: there is one only when it asked to move.
 pub fn take(config: &Config, child: u32) -> Option<Request> {
     let path = request_path(config, child)?;
     let text = fs::read_to_string(&path).ok()?;
@@ -510,6 +519,15 @@ mod tests {
 
     fn args(list: &[&str]) -> Vec<OsString> {
         list.iter().map(OsString::from).collect()
+    }
+
+    #[test]
+    fn says_where_new_sessions_start_only_when_the_default_is_left() {
+        assert_eq!(
+            new_sessions("work", "work", "personal").as_deref(),
+            Some("New sessions still start on work: `clauset use personal` changes that.")
+        );
+        assert_eq!(new_sessions("client", "work", "personal"), None);
     }
 
     #[test]

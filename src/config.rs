@@ -1,5 +1,3 @@
-//! `~/.claude/clauset/config.toml` and the rule that picks an account.
-
 use std::collections::BTreeMap;
 use std::ffi::OsStr;
 use std::fs;
@@ -34,7 +32,6 @@ pub struct Account {
     pub email: Option<String>,
     /// The organization UUID the sign-in must belong to.
     pub org: Option<String>,
-    /// This account's own `warn_at`.
     pub warn_at: Option<f64>,
 }
 
@@ -78,8 +75,7 @@ impl Config {
         Self::parse(&text, home).with_context(|| format!("in {}", path.display()))
     }
 
-    /// The config, or `None` when there is no config file yet. A file that
-    /// does not parse is still an error.
+    /// A file that does not parse is still an error.
     pub fn load_if_present(home: &Path) -> Result<Option<Self>> {
         if !Self::path(home).exists() {
             return Ok(None);
@@ -127,7 +123,6 @@ impl Config {
         }
     }
 
-    /// The percent at which an account warns, if it does.
     pub fn warn_at(&self, name: &str) -> Option<f64> {
         self.accounts.get(name)?.warn_at.or(self.warn_at)
     }
@@ -178,13 +173,11 @@ impl Config {
         Choice::Default(&self.default)
     }
 
-    /// `path` with the home directory written as `~`.
     pub fn tilde(&self, path: &Path) -> String {
         tilde(path, &self.home)
     }
 }
 
-/// `path` with the home directory written as `~`.
 pub fn tilde(path: &Path, home: &Path) -> String {
     match path.strip_prefix(home) {
         Ok(rest) if rest.as_os_str().is_empty() => "~".into(),

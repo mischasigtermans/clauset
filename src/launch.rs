@@ -1,5 +1,3 @@
-//! Starting the real `claude` on an account.
-
 use std::env;
 use std::ffi::OsString;
 use std::fs;
@@ -37,13 +35,8 @@ fn is_executable(path: &Path) -> bool {
         .is_ok_and(|meta| meta.is_file() && meta.permissions().mode() & 0o111 != 0)
 }
 
-/// `claude` set up for an account. Another account than the hub gets the
-/// hub's plugins and, given the directory it starts in, the hub's MCP
-/// servers: the user-scope ones and that directory's project-scope ones, each
-/// written out in the shape `--mcp-config` reads. With `chrome`, every account
-/// but the one `chrome` names reaches the browser through that account. The
-/// flags go first and in their `=` form: the option takes several values, and
-/// a separate value would swallow a prompt.
+/// The `--mcp-config` flags go first and in their `=` form: the option takes
+/// several values, and a separate value would swallow a prompt.
 pub fn command(
     config: &Config,
     name: &str,
@@ -141,7 +134,6 @@ fn mcp_dir(config: &Config) -> Option<PathBuf> {
     Some(Config::path(&config.home).parent()?.join("mcp"))
 }
 
-/// The hub's user-scope MCP servers.
 fn user_servers(config: &Config, hub_state: &Value) -> Option<PathBuf> {
     servers_file(
         mcp_dir(config)?.join("user.json"),
@@ -259,9 +251,6 @@ extern "C" fn forward(signal: libc::c_int) {
     }
 }
 
-/// Runs `claude` as a child and stays beside it. When `clauset switch` asked
-/// for another account, the child ends once its turn is over and the session
-/// resumes on that account with `--resume`, in the same terminal.
 fn supervise(
     config: &Config,
     name: &str,

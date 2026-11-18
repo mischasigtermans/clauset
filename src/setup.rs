@@ -1,5 +1,3 @@
-//! `clauset setup`: names the hub's sign-in, adds accounts, picks the default
-//! and wires clauset into the shell and Claude Code.
 //! Every step reads what is there first and asks only about what is missing.
 
 use std::fs;
@@ -35,6 +33,82 @@ pub fn run(home: &Path) -> Result<()> {
         "Done. `clauset` shows the accounts and their usage, `clauset doctor` checks everything.",
     )?;
     Ok(())
+}
+
+/// A step that needs no answer, so a program can carry it out as the
+/// questions do. The other steps are commands of their own: `add`, `use`
+/// and `warn`.
+#[derive(Clone, Copy, clap::ValueEnum)]
+pub enum Step {
+    /// The `claude` shim, first on PATH
+    Shim,
+    /// The Claude Code hooks
+    Hooks,
+    /// Claude Code's status line
+    Statusline,
+    /// The `clauset` and `accounts` skills
+    Skills,
+}
+
+/// `replace` lets `Skills` write this version's over a skill that differs.
+pub fn apply(home: &Path, step: Step, replace: bool) -> Result<String> {
+    match step {
+        Step::Shim => apply_shim(home),
+        Step::Hooks => apply_hooks(home),
+        Step::Statusline => apply_statusline(home),
+        Step::Skills => apply_skills(home, replace),
+    }
+}
+
+/// What each step still needs, for a program to read, such as the menu bar
+/// app. It changes nothing.
+pub fn state(home: &Path) -> Result<Value> {
+    let config = Config::load(home).ok();
+    let hub = config.as_ref().and_then(|config| {
+        config
+            .accounts
+            .iter()
+            .find(|(_, account)| config.is_hub(account))
+            .map(|(name, _)| name.as_str())
+    });
+    let sign_in = state::read(&home.join(".claude.json"))
+        .ok()
+        .as_ref()
+        .and_then(state::sign_in);
+    let done = |done: bool| if done { "done" } else { "todo" };
+
+    let shimmed = crate::doctor::first_claude_is_clauset();
+    let missing_hooks = missing_hooks(home);
+    let (status_line, command) = match status_line(home)? {
+        StatusLine::Ours => ("done", None),
+        StatusLine::Unset => ("todo", None),
+        StatusLine::Elsewhere(program) => ("todo", Some(format!("{program} statusline"))),
+        StatusLine::Own(command) => ("manual", Some(command)),
+    };
+    let (missing_skills, differ) = skills_state(home);
+    let skills = match (missing_skills.is_empty(), differ.is_empty()) {
+        (false, _) => "todo",
+        (true, false) => "differs",
+        (true, true) => "done",
+    };
+    Ok(json!({
+        "version": 1,
+        "claude": crate::launch::real_claude().is_ok(),
+        "hub": {
+            "account": hub,
+            "signed_in": sign_in.is_some(),
+            "suggestion": sign_in.as_ref().map(suggest),
+        },
+        "steps": {
+            "shim": {
+                "state": done(shimmed),
+                "file": shell_rc(home).map(|rc| config::tilde(&rc, home)),
+            },
+            "hooks": {"state": done(missing_hooks.is_empty()), "missing": missing_hooks},
+            "statusline": {"state": status_line, "command": command},
+            "skills": {"state": skills, "missing": missing_skills, "differ": differ},
+        },
+    }))
 }
 
 fn hub_account(home: &Path) -> Result<()> {
@@ -99,7 +173,7 @@ fn default_account(home: &Path) -> Result<()> {
     }
     note(
         "Default",
-        "A new session starts on the default account, or on the account of the session that started it.\n\nLater: `clauset use <account>` changes the default, and `clauset switch <account>` inside a session moves it there and makes that account the default.",
+        "A new session starts on the default account, or on the account of the session that started it.\n\nLater: `clauset use <account>` changes the default, and `clauset switch <account>` inside a session moves that session there.",
     )?;
     let mut prompt = select("The account new sessions start on");
     for name in config.accounts.keys() {
@@ -155,22 +229,45 @@ fn warn(home: &Path) -> Result<()> {
     Ok(())
 }
 
+fn shell_rc(home: &Path) -> Option<PathBuf> {
+    match std::env::var("SHELL")
+        .unwrap_or_default()
+        .rsplit('/')
+        .next()
+    {
+        Some("zsh") => Some(home.join(".zshrc")),
+        Some("bash") => Some(home.join(".bashrc")),
+        _ => None,
+    }
+}
+
+fn apply_shim(home: &Path) -> Result<String> {
+    let bin = account::init(home)?;
+    let Some(rc) = shell_rc(home) else {
+        return Ok(format!(
+            "Put `export PATH=\"{}:$PATH\"` last in your shell's startup file.",
+            bin.display()
+        ));
+    };
+    let text = fs::read_to_string(&rc).unwrap_or_default();
+    if !text.contains("clauset/bin") {
+        let mut file = fs::OpenOptions::new().append(true).create(true).open(&rc)?;
+        writeln!(
+            file,
+            "\n# clauset shim: stays below every other line that changes PATH, so `claude` resolves to it first"
+        )?;
+        writeln!(file, "export PATH=\"{}:$PATH\"", bin.display())?;
+    }
+    Ok("Open a new terminal, and restart Solo or any app that starts `claude`, to use it.".into())
+}
+
 fn shim(home: &Path) -> Result<()> {
     if crate::doctor::first_claude_is_clauset() {
         return Ok(());
     }
-    let shell = std::env::var("SHELL").unwrap_or_default();
-    let rc = match shell.rsplit('/').next() {
-        Some("zsh") => home.join(".zshrc"),
-        Some("bash") => home.join(".bashrc"),
-        _ => {
-            let bin = account::init(home)?;
-            log::info(format!(
-                "Put `export PATH=\"{}:$PATH\"` last in your shell's startup file.",
-                bin.display()
-            ))?;
-            return Ok(());
-        }
+    let Some(rc) = shell_rc(home) else {
+        log::info(apply_shim(home)?)?;
+        return Ok(());
     };
     let shown = rc
         .file_name()
@@ -184,19 +281,7 @@ fn shim(home: &Path) -> Result<()> {
     {
         return Ok(());
     }
-    let bin = account::init(home)?;
-    let text = fs::read_to_string(&rc).unwrap_or_default();
-    if !text.contains("clauset/bin") {
-        let mut file = fs::OpenOptions::new().append(true).create(true).open(&rc)?;
-        writeln!(
-            file,
-            "\n# clauset shim: stays below every other line that changes PATH, so `claude` resolves to it first"
-        )?;
-        writeln!(file, "export PATH=\"{}:$PATH\"", bin.display())?;
-    }
-    log::success(
-        "Open a new terminal, and restart Solo or any app that starts `claude`, to use it.",
-    )?;
+    log::success(apply_shim(home)?)?;
     Ok(())
 }
 
@@ -217,7 +302,6 @@ const HOOKS: [(&str, Option<&str>, &str, &str); 2] = [
     ),
 ];
 
-/// The entry under `event` that runs `clauset hook <hook>`.
 fn hook_entry<'a>(settings: &'a mut Value, event: &str, hook: &str) -> Option<&'a mut Value> {
     let command = format!("clauset hook {hook}");
     settings["hooks"][event]
@@ -232,8 +316,6 @@ fn hook_entry<'a>(settings: &'a mut Value, event: &str, hook: &str) -> Option<&'
         })
 }
 
-/// Whether `settings` runs `hook` of the clauset at `exe` on `event` with
-/// exactly `matcher`.
 fn has_hook(
     settings: &mut Value,
     event: &str,
@@ -269,11 +351,27 @@ fn hooks(home: &Path) -> Result<()> {
     {
         return Ok(());
     }
-    put_hooks(&mut settings, &exe, &missing);
-    write_settings(&path, &settings)
+    apply_hooks(home)?;
+    Ok(())
 }
 
-/// Puts the hooks named in `settings`, run by the clauset at `exe`.
+fn apply_hooks(home: &Path) -> Result<String> {
+    let path = home.join(".claude/settings.json");
+    let mut settings = read_settings(&path)?;
+    let exe = exe_command(home)?;
+    let missing = missing_in(&mut settings, &exe);
+    if missing.is_empty() {
+        return Ok("The hooks are in ~/.claude/settings.json already.".into());
+    }
+    put_hooks(&mut settings, &exe, &missing);
+    write_settings(&path, &settings)?;
+    Ok(format!(
+        "Added to ~/.claude/settings.json: the {} hook{}.",
+        missing.join(" and "),
+        if missing.len() == 1 { "" } else { "s" }
+    ))
+}
+
 fn put_hooks(settings: &mut Value, exe: &str, names: &[&str]) {
     for (event, matcher, hook, _) in HOOKS.iter().filter(|(_, _, hook, _)| names.contains(hook)) {
         // An entry with an older matcher, or another clauset, gets the
@@ -303,51 +401,92 @@ fn put_hooks(settings: &mut Value, exe: &str, names: &[&str]) {
     }
 }
 
-fn statusline(home: &Path) -> Result<()> {
-    let path = home.join(".claude/settings.json");
-    let mut settings = read_settings(&path)?;
+enum StatusLine {
+    /// Nothing: clauset can be it.
+    Unset,
+    /// This clauset, in its command or in the script the command names.
+    Ours,
+    /// A clauset installed elsewhere, at this path.
+    Elsewhere(String),
+    /// A command of the person's own, which clauset leaves to them.
+    Own(String),
+}
+
+fn status_line(home: &Path) -> Result<StatusLine> {
+    let settings = read_settings(&home.join(".claude/settings.json"))?;
     let exe = exe_command(home)?;
-    match settings
+    let Some(command) = settings
         .get("statusLine")
         .and_then(|line| line.get("command"))
         .and_then(Value::as_str)
+    else {
+        return Ok(StatusLine::Unset);
+    };
+    let words: Vec<&str> = command.split_whitespace().collect();
+    if let [program, "statusline"] = words[..]
+        && program.ends_with("clauset")
+        && program != exe
     {
-        Some(command) => {
-            let words: Vec<&str> = command.split_whitespace().collect();
-            if let [program, "statusline"] = words[..]
-                && program.ends_with("clauset")
-                && program != exe
+        return Ok(StatusLine::Elsewhere(program.to_owned()));
+    }
+    Ok(if statusline_runs_clauset(home) {
+        StatusLine::Ours
+    } else {
+        StatusLine::Own(command.to_owned())
+    })
+}
+
+fn own_status_line(command: &str, exe: &str) -> String {
+    format!(
+        "Your status line runs `{command}`. Pipe the JSON it gets through `{exe} statusline`: that prints the account and keeps its usage for `clauset`."
+    )
+}
+
+/// A status line of the person's own is refused: only they can pipe it
+/// through clauset.
+fn apply_statusline(home: &Path) -> Result<String> {
+    let path = home.join(".claude/settings.json");
+    let exe = exe_command(home)?;
+    match status_line(home)? {
+        StatusLine::Ours => Ok("The status line runs `clauset statusline` already.".into()),
+        StatusLine::Own(command) => bail!("{}", own_status_line(&command, &exe)),
+        StatusLine::Unset | StatusLine::Elsewhere(_) => {
+            let mut settings = read_settings(&path)?;
+            match settings
+                .get_mut("statusLine")
+                .filter(|line| line.is_object())
             {
-                if confirm(format!(
-                    "Your status line runs `{program} statusline`. Run this clauset's instead, `{exe} statusline`?"
-                ))
-                .initial_value(true)
-                .interact()?
-                {
-                    settings["statusLine"]["command"] = json!(format!("{exe} statusline"));
-                    write_settings(&path, &settings)?;
+                Some(line) => line["command"] = json!(format!("{exe} statusline")),
+                None => {
+                    settings["statusLine"] =
+                        json!({"type": "command", "command": format!("{exe} statusline")});
                 }
-                return Ok(());
             }
-            if !statusline_runs_clauset(home) {
-                log::info(format!(
-                    "Your status line runs `{command}`. Pipe the JSON it gets through `{exe} statusline`: that prints the account and keeps its usage for `clauset`."
-                ))?;
-            }
-            Ok(())
-        }
-        None => {
-            if confirm("Show the account in Claude Code's status line?")
-                .initial_value(true)
-                .interact()?
-            {
-                settings["statusLine"] =
-                    json!({"type": "command", "command": format!("{exe} statusline")});
-                write_settings(&path, &settings)?;
-            }
-            Ok(())
+            write_settings(&path, &settings)?;
+            Ok(format!(
+                "The status line in ~/.claude/settings.json runs `{exe} statusline`."
+            ))
         }
     }
+}
+
+fn statusline(home: &Path) -> Result<()> {
+    let exe = exe_command(home)?;
+    let question = match status_line(home)? {
+        StatusLine::Ours => return Ok(()),
+        StatusLine::Own(command) => {
+            log::info(own_status_line(&command, &exe))?;
+            return Ok(());
+        }
+        StatusLine::Elsewhere(program) => format!(
+            "Your status line runs `{program} statusline`. Run this clauset's instead, `{exe} statusline`?"
+        ),
+        StatusLine::Unset => "Show the account in Claude Code's status line?".to_owned(),
+    };
+    if confirm(question).initial_value(true).interact()? {
+        apply_statusline(home)?;
+    }
+    Ok(())
 }
 
 const SKILLS: [(&str, &str); 2] = [
@@ -384,15 +523,38 @@ fn write_skills(home: &Path, names: &[&str]) -> Result<()> {
     Ok(())
 }
 
+fn skill_paths(names: &[&str]) -> String {
+    names
+        .iter()
+        .map(|name| format!("~/.claude/skills/{name}/SKILL.md"))
+        .collect::<Vec<_>>()
+        .join(", ")
+}
+
+fn apply_skills(home: &Path, replace: bool) -> Result<String> {
+    let (missing, differ) = skills_state(home);
+    let mut written = missing.clone();
+    if replace {
+        written.extend(&differ);
+    }
+    write_skills(home, &written)?;
+    let mut said = if written.is_empty() {
+        "The skills are in ~/.claude/skills already.".to_owned()
+    } else {
+        format!("Wrote {}.", skill_paths(&written))
+    };
+    if !replace && !differ.is_empty() {
+        said.push_str(&format!(
+            " Left as found, differing from this version's: {}. `--replace` writes this version's there.",
+            skill_paths(&differ)
+        ));
+    }
+    Ok(said)
+}
+
 fn skills(home: &Path) -> Result<()> {
     let (missing, differ) = skills_state(home);
-    let paths = |names: &[&str]| -> String {
-        names
-            .iter()
-            .map(|name| format!("~/.claude/skills/{name}/SKILL.md"))
-            .collect::<Vec<_>>()
-            .join(", ")
-    };
+    let paths = skill_paths;
     if !missing.is_empty()
         && confirm(format!(
             "Write the skills that let you run `/clauset <args>` and tell Claude what clauset does: {}?",
@@ -474,12 +636,8 @@ fn push(settings: &mut Value, event: &str, entry: Value) {
     list.as_array_mut().expect("set above").push(entry);
 }
 
-/// This binary as a hook command, with the home directory written as `~`.
 fn exe_command(home: &Path) -> Result<String> {
-    Ok(config::tilde(
-        &std::env::current_exe()?.canonicalize()?,
-        home,
-    ))
+    Ok(config::tilde(&account::exe(home)?, home))
 }
 
 fn suggest(sign_in: &SignIn) -> String {

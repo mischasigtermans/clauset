@@ -1,7 +1,7 @@
 ---
 name: clauset
-description: "Runs clauset in this session: `/clauset switch <account>` moves this session and makes the account the default, `/clauset switch <account> --all` moves every session on this account, `/clauset` shows the accounts and their usage, `/clauset which` shows where sessions start."
-argument-hint: "[switch <account> [--all] | which | doctor]"
+description: "Runs clauset in this session: `/clauset switch <account>` moves this session, `/clauset switch <account> --all` moves every session on this account, `/clauset use <account>` sets where new sessions start, `/clauset` shows the accounts and their usage, `/clauset which` shows where sessions start."
+argument-hint: "[switch <account> [--all] | use <account> | which | doctor]"
 disable-model-invocation: true
 allowed-tools: Bash(clauset:*)
 ---

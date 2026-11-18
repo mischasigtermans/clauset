@@ -14,6 +14,7 @@ pub mod edit;
 pub mod hook;
 pub mod launch;
 pub mod link;
+pub mod notify;
 pub mod setup;
 pub mod state;
 pub mod status;

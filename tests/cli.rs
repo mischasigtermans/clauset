@@ -486,6 +486,346 @@ fn the_overview_shows_usage_a_status_line_recorded() {
 }
 
 #[test]
+fn status_json_gives_every_account_with_its_usage_and_settings() {
+    let world = World::new();
+    let home = world.home();
+    world.config(
+        r#"
+        default = "personal"
+        warn_at = 90
+        chrome = "team"
+        [accounts.personal]
+        dir = "~/.claude-accounts/personal"
+        warn_at = 70
+        [accounts.team]
+        dir = "~/.claude"
+        "#,
+    );
+    fs::write(
+        home.join(".claude-accounts/personal/.claude.json"),
+        r#"{"oauthAccount":{"emailAddress":"p@example.com","organizationName":"p@example.com's Organization","organizationType":"claude_max","planDisplayName":"Ultra"},"cachedUsageUtilization":{"fetchedAtMs":500,"utilization":{"five_hour":null,"seven_day":null,"limits":[{"kind":"weekly_all","percent":42,"resets_at":"2099-01-01T00:00:00+00:00","scope":null},{"kind":"weekly_scoped","percent":30,"resets_at":"2099-01-01T00:00:00+00:00","scope":{"model":{"id":null,"display_name":"Fable"},"surface":null}}]}}}"#,
+    )
+    .unwrap();
+    let usage = home.join(".claude/clauset/usage");
+    fs::create_dir_all(&usage).unwrap();
+    fs::write(
+        usage.join("personal.json"),
+        r#"{"at_ms":1000,"five_hour":{"percent":42.0,"resets_at":4102444800},"seven_day":{"percent":99.0,"resets_at":1000}}"#,
+    )
+    .unwrap();
+
+    let out = stdout(
+        world
+            .clauset("misc")
+            .args(["status", "--json"])
+            .output()
+            .unwrap(),
+    );
+    let status: serde_json::Value = serde_json::from_str(&out).unwrap();
+    assert_eq!(status["version"], 1);
+    assert_eq!(status["default"], "personal");
+    assert_eq!(status["here"], "personal");
+    assert_eq!(status["warn_at"], 90.0);
+    assert_eq!(status["chrome"], "team");
+
+    let personal = &status["accounts"][0];
+    assert_eq!(personal["name"], "personal");
+    assert_eq!(personal["default"], true);
+    assert_eq!(personal["hub"], false);
+    assert_eq!(personal["signed_in"], true);
+    assert_eq!(personal["email"], "p@example.com");
+    assert_eq!(personal["org"], "personal");
+    assert_eq!(personal["plan"], "Ultra");
+    assert_eq!(personal["warn_at"], 70.0);
+    assert_eq!(personal["own_warn_at"], 70.0);
+    assert_eq!(personal["sessions"], 0);
+    assert_eq!(personal["usage"]["at_ms"], 1000);
+    assert_eq!(personal["usage"]["five_hour"]["percent"], 42.0);
+    assert_eq!(personal["usage"]["five_hour"]["resets_at"], 4102444800_i64);
+    assert_eq!(personal["usage"]["five_hour"]["reset_passed"], false);
+    assert_eq!(personal["usage"]["seven_day"]["percent"], 0.0);
+    assert_eq!(personal["usage"]["seven_day"]["reset_passed"], true);
+    assert_eq!(personal["models"][0]["name"], "Fable");
+    assert_eq!(personal["models"][0]["percent"], 30.0);
+    assert_eq!(personal["models"][0]["resets_at"], 4070908800_i64);
+    assert_eq!(personal["models"][0]["reset_passed"], false);
+    assert_eq!(personal["models"][0]["at_ms"], 500);
+
+    let team = &status["accounts"][1];
+    assert_eq!(team["name"], "team");
+    assert_eq!(team["default"], false);
+    assert_eq!(team["hub"], true);
+    assert_eq!(team["signed_in"], false);
+    assert_eq!(team["warn_at"], 90.0);
+    assert!(team["own_warn_at"].is_null(), "{team}");
+    assert!(team["usage"].is_null(), "{team}");
+    assert_eq!(team["models"].as_array().map(Vec::len), Some(0));
+
+    let overview = stdout(world.clauset("misc").output().unwrap());
+    assert!(overview.contains("Fable 7d 30% ("), "{overview}");
+}
+
+#[test]
+fn status_json_fails_without_accounts() {
+    let world = World::new();
+    fs::remove_file(world.home().join(".claude/clauset/config.toml")).unwrap();
+    let output = world
+        .clauset("misc")
+        .args(["status", "--json"])
+        .output()
+        .unwrap();
+    assert!(!output.status.success());
+    assert!(output.stdout.is_empty());
+    assert!(String::from_utf8_lossy(&output.stderr).contains("clauset setup"));
+}
+
+#[test]
+fn chrome_names_the_account_or_clears_it() {
+    let world = World::new();
+    let config = || -> toml::Table {
+        fs::read_to_string(world.home().join(".claude/clauset/config.toml"))
+            .unwrap()
+            .parse()
+            .unwrap()
+    };
+    let out = stdout(
+        world
+            .clauset("misc")
+            .args(["chrome", "team"])
+            .output()
+            .unwrap(),
+    );
+    assert!(
+        out.starts_with("Every account reaches Claude in Chrome through team"),
+        "{out}"
+    );
+    assert_eq!(config()["chrome"].as_str(), Some("team"));
+
+    let refused = world
+        .clauset("misc")
+        .args(["chrome", "nobody"])
+        .output()
+        .unwrap();
+    assert!(!refused.status.success());
+    assert_eq!(config()["chrome"].as_str(), Some("team"));
+
+    stdout(
+        world
+            .clauset("misc")
+            .args(["chrome", "off"])
+            .output()
+            .unwrap(),
+    );
+    assert!(!config().contains_key("chrome"));
+}
+
+#[test]
+fn a_warning_goes_through_the_menu_bar_app_while_it_runs() {
+    let world = World::new();
+    let home = world.home();
+    world.config(
+        r#"
+        default = "personal"
+        warn_at = 50
+        [accounts.personal]
+        dir = "~/.claude-accounts/personal"
+        [accounts.team]
+        dir = "~/.claude"
+        "#,
+    );
+    for tool in ["open", "osascript"] {
+        let fake = home.join("fake").join(tool);
+        fs::write(&fake, "#!/bin/sh\necho \"$0 $*\" >> \"$HOME/notified\"\n").unwrap();
+        fs::set_permissions(&fake, fs::Permissions::from_mode(0o755)).unwrap();
+    }
+    let cross = |resets_at: i64| {
+        let mut child = world
+            .clauset("misc")
+            .env("CLAUDE_CONFIG_DIR", world.personal_dir())
+            .arg("statusline")
+            .stdin(Stdio::piped())
+            .stdout(Stdio::piped())
+            .spawn()
+            .unwrap();
+        let input = format!(
+            r#"{{"rate_limits":{{"five_hour":{{"used_percentage":60,"resets_at":{resets_at}}}}}}}"#
+        );
+        child
+            .stdin
+            .take()
+            .unwrap()
+            .write_all(input.as_bytes())
+            .unwrap();
+        stdout(child.wait_with_output().unwrap());
+        fs::read_to_string(home.join("notified")).unwrap()
+    };
+
+    let said = cross(4102444800);
+    assert!(
+        said.contains("/osascript ") && !said.contains("/open "),
+        "{said}"
+    );
+    assert!(
+        said.contains("end run -- Personal is at 60%"),
+        "the text follows `--`, so osascript never reads it as an option: {said}"
+    );
+
+    fs::write(
+        home.join(".claude/clauset/app.pid"),
+        std::process::id().to_string(),
+    )
+    .unwrap();
+    let said = cross(4102444801);
+    assert_eq!(said.matches("/osascript ").count(), 1, "{said}");
+    assert!(
+        !said.contains("/open "),
+        "nothing opens a URL: a web page could open one too: {said}"
+    );
+    let inbox = home.join(".claude/clauset/notify");
+    let left: Vec<_> = fs::read_dir(&inbox)
+        .unwrap()
+        .map(|entry| entry.unwrap().path())
+        .collect();
+    assert_eq!(left.len(), 1, "{left:?}");
+    assert!(
+        fs::read_to_string(&left[0])
+            .unwrap()
+            .starts_with("Personal is at 60% of its 5-hour limit"),
+        "{left:?}"
+    );
+    assert_eq!(
+        fs::metadata(&inbox).unwrap().permissions().mode() & 0o777,
+        0o700,
+        "only its owner leaves notifications there"
+    );
+}
+
+#[test]
+fn remove_takes_an_account_out_of_the_config_and_keeps_its_directory() {
+    let world = World::new();
+    let home = world.home();
+    world.config(
+        r#"
+        default = "work"
+        chrome = "browser"
+        [accounts.personal]
+        dir = "~/.claude-accounts/personal"
+        [accounts.work]
+        dir = "~/.claude-accounts/work"
+        [accounts.browser]
+        dir = "~/.claude-accounts/browser"
+        [accounts.team]
+        dir = "~/.claude"
+        "#,
+    );
+    let usage = home.join(".claude/clauset/usage");
+    fs::create_dir_all(&usage).unwrap();
+    for file in ["personal.json", "personal.warned.json"] {
+        fs::write(usage.join(file), "{}").unwrap();
+    }
+    let refused = |account: &str| {
+        let output = world
+            .clauset("misc")
+            .args(["remove", account])
+            .output()
+            .unwrap();
+        assert!(!output.status.success(), "{account}");
+        String::from_utf8_lossy(&output.stderr).into_owned()
+    };
+    assert!(refused("work").contains("is the default"));
+    assert!(refused("browser").contains("`chrome` names"));
+    assert!(refused("team").contains("is the hub"));
+    assert!(refused("nobody").contains("no account named"));
+
+    let out = stdout(
+        world
+            .clauset("misc")
+            .args(["remove", "personal"])
+            .output()
+            .unwrap(),
+    );
+    assert!(
+        out.contains("clauset add personal --dir ~/.claude-accounts/personal"),
+        "{out}"
+    );
+    let config: toml::Table = fs::read_to_string(home.join(".claude/clauset/config.toml"))
+        .unwrap()
+        .parse()
+        .unwrap();
+    let accounts = config["accounts"].as_table().unwrap();
+    assert!(!accounts.contains_key("personal"));
+    assert_eq!(accounts.len(), 3);
+    assert!(home.join(".claude-accounts/personal").is_dir());
+    assert_eq!(usage.read_dir().unwrap().count(), 0);
+}
+
+#[test]
+fn login_signs_the_hub_in_again_once_no_session_runs_on_it() {
+    let world = World::new();
+    let home = world.home();
+    fs::write(
+        home.join(".claude.json"),
+        r#"{"oauthAccount":{"emailAddress":"hub@example.com","organizationName":"Acme","organizationUuid":"org-1","organizationType":"claude_team"},"mcpServers":{}}"#,
+    )
+    .unwrap();
+    let out = stdout(
+        world
+            .clauset("misc")
+            .args(["login", "team"])
+            .output()
+            .unwrap(),
+    );
+    assert!(out.contains("ARGS:auth login"), "{out}");
+    assert!(out.contains("CONFIG_DIR:unset"), "{out}");
+    assert!(out.contains("team: signed in as hub@example.com"), "{out}");
+
+    fs::write(home.join("fake/claude"), REGISTERED_CLAUDE).unwrap();
+    let session = start_session(&world, "busy", "team", "idle");
+    let pids = registered(&world, 1);
+    let output = world
+        .clauset("misc")
+        .args(["login", "team"])
+        .output()
+        .unwrap();
+    assert!(!output.status.success());
+    let said = String::from_utf8_lossy(&output.stderr);
+    assert!(said.contains("1 session runs on team, the hub"), "{said}");
+
+    end(pids["busy"]);
+    session.wait_with_output().unwrap();
+}
+
+#[test]
+fn remove_refuses_an_account_sessions_run_on() {
+    let world = World::new();
+    let home = world.home();
+    world.config(
+        r#"
+        default = "team"
+        [accounts.personal]
+        dir = "~/.claude-accounts/personal"
+        [accounts.team]
+        dir = "~/.claude"
+        "#,
+    );
+    fs::write(home.join("fake/claude"), REGISTERED_CLAUDE).unwrap();
+    let session = start_session(&world, "busy", "personal", "idle");
+    let pids = registered(&world, 1);
+
+    let output = world
+        .clauset("misc")
+        .args(["remove", "personal"])
+        .output()
+        .unwrap();
+    assert!(!output.status.success());
+    let said = String::from_utf8_lossy(&output.stderr);
+    assert!(said.contains("1 session runs on personal"), "{said}");
+
+    end(pids["busy"]);
+    session.wait_with_output().unwrap();
+}
+
+#[test]
 fn add_takes_in_a_signed_in_config_dir_without_a_login() {
     let world = World::new();
     let home = world.home();
@@ -520,6 +860,202 @@ fn add_takes_in_a_signed_in_config_dir_without_a_login() {
         ),
         "{config}"
     );
+}
+
+#[test]
+fn setup_reports_its_steps_and_applies_one_without_asking() {
+    let world = World::new();
+    let home = world.home();
+    let state = || -> serde_json::Value {
+        let out = stdout(
+            world
+                .clauset("misc")
+                .args(["setup", "--json"])
+                .output()
+                .unwrap(),
+        );
+        serde_json::from_str(&out).unwrap()
+    };
+    let apply = |args: &[&str]| {
+        stdout(
+            world
+                .clauset("misc")
+                .arg("setup")
+                .args(args)
+                .output()
+                .unwrap(),
+        )
+    };
+
+    let before = state();
+    assert_eq!(before["claude"], true);
+    assert_eq!(before["hub"]["account"], "team");
+    assert_eq!(before["hub"]["signed_in"], false);
+    assert_eq!(before["steps"]["shim"]["state"], "done");
+    assert_eq!(before["steps"]["hooks"]["state"], "todo");
+    assert_eq!(
+        before["steps"]["hooks"]["missing"],
+        serde_json::json!(["context", "limit"])
+    );
+    assert_eq!(before["steps"]["statusline"]["state"], "todo");
+    assert_eq!(before["steps"]["skills"]["state"], "todo");
+    assert_eq!(
+        before["steps"]["skills"]["missing"],
+        serde_json::json!(["clauset", "accounts"])
+    );
+
+    apply(&["--apply", "hooks"]);
+    apply(&["--apply", "statusline"]);
+    apply(&["--apply", "skills"]);
+    let settings: serde_json::Value =
+        serde_json::from_str(&fs::read_to_string(home.join(".claude/settings.json")).unwrap())
+            .unwrap();
+    let command = |value: &serde_json::Value| value.as_str().unwrap_or_default().to_owned();
+    assert!(command(&settings["statusLine"]["command"]).ends_with("clauset statusline"));
+    assert!(
+        command(&settings["hooks"]["SessionStart"][0]["hooks"][0]["command"])
+            .ends_with("clauset hook context")
+    );
+    let after = state();
+    for step in ["hooks", "statusline", "skills"] {
+        assert_eq!(after["steps"][step]["state"], "done", "{step}");
+    }
+
+    let skill = home.join(".claude/skills/accounts/SKILL.md");
+    fs::write(&skill, "a version of my own").unwrap();
+    let changed = state();
+    assert_eq!(changed["steps"]["skills"]["state"], "differs");
+    assert_eq!(
+        changed["steps"]["skills"]["differ"],
+        serde_json::json!(["accounts"])
+    );
+    apply(&["--apply", "skills"]);
+    assert_eq!(fs::read_to_string(&skill).unwrap(), "a version of my own");
+    apply(&["--apply", "skills", "--replace"]);
+    assert_eq!(state()["steps"]["skills"]["state"], "done");
+}
+
+#[test]
+fn setup_applies_the_shim_with_one_line_in_the_shell_startup_file() {
+    let world = World::new();
+    let home = world.home();
+    let setup = |args: &[&str]| {
+        stdout(
+            world
+                .clauset("misc")
+                .env(
+                    "PATH",
+                    format!("{}:/usr/bin:/bin", home.join("fake").display()),
+                )
+                .env("SHELL", "/bin/zsh")
+                .arg("setup")
+                .args(args)
+                .output()
+                .unwrap(),
+        )
+    };
+    let state: serde_json::Value = serde_json::from_str(&setup(&["--json"])).unwrap();
+    assert_eq!(state["version"], 1);
+    assert_eq!(state["steps"]["shim"]["state"], "todo");
+    assert_eq!(state["steps"]["shim"]["file"], "~/.zshrc");
+
+    let refused = world
+        .clauset("misc")
+        .args(["setup", "--apply", "shim", "--replace"])
+        .output()
+        .unwrap();
+    assert!(!refused.status.success());
+    assert!(
+        String::from_utf8_lossy(&refused.stderr).contains("--replace goes with `--apply skills`")
+    );
+
+    setup(&["--apply", "shim"]);
+    setup(&["--apply", "shim"]);
+    assert!(
+        home.join(".claude/clauset/bin/claude")
+            .symlink_metadata()
+            .is_ok()
+    );
+    assert_eq!(
+        fs::read_link(home.join(".claude/clauset/bin/clauset")).unwrap(),
+        fs::read_link(home.join(".claude/clauset/bin/claude")).unwrap(),
+        "the command stands beside the shim, for an install that put it nowhere on PATH"
+    );
+    let rc = fs::read_to_string(home.join(".zshrc")).unwrap();
+    assert_eq!(rc.matches("clauset/bin").count(), 1, "{rc}");
+}
+
+#[test]
+fn setup_writes_the_path_clauset_was_started_from() {
+    let world = World::new();
+    let home = world.home();
+    fs::create_dir_all(home.join("brew/bin")).unwrap();
+    let linked = home.join("brew/bin/clauset");
+    std::os::unix::fs::symlink(env!("CARGO_BIN_EXE_clauset"), &linked).unwrap();
+    for step in ["shim", "hooks"] {
+        let applied = world
+            .command(&linked, "misc")
+            .env("SHELL", "/bin/zsh")
+            .args(["setup", "--apply", step])
+            .output()
+            .unwrap();
+        assert!(applied.status.success(), "{step}");
+    }
+
+    assert_eq!(
+        fs::read_link(home.join(".claude/clauset/bin/claude")).unwrap(),
+        linked,
+        "Homebrew deletes the folder a link like this points into on its next upgrade"
+    );
+    let settings = fs::read_to_string(home.join(".claude/settings.json")).unwrap();
+    assert!(
+        settings.contains("~/brew/bin/clauset hook context"),
+        "{settings}"
+    );
+
+    let through_the_link = world
+        .command(&home.join(".claude/clauset/bin/clauset"), "misc")
+        .env("SHELL", "/bin/zsh")
+        .args(["setup", "--apply", "shim"])
+        .output()
+        .unwrap();
+    assert!(through_the_link.status.success());
+    assert_eq!(
+        fs::read_link(home.join(".claude/clauset/bin/claude")).unwrap(),
+        linked,
+        "started through its own link, clauset keeps what that link points to"
+    );
+}
+
+#[test]
+fn setup_leaves_a_status_line_of_your_own_to_you() {
+    let world = World::new();
+    let home = world.home();
+    fs::write(
+        home.join(".claude/settings.json"),
+        r#"{"statusLine":{"type":"command","command":"~/bin/line.sh"}}"#,
+    )
+    .unwrap();
+    let out = stdout(
+        world
+            .clauset("misc")
+            .args(["setup", "--json"])
+            .output()
+            .unwrap(),
+    );
+    let state: serde_json::Value = serde_json::from_str(&out).unwrap();
+    assert_eq!(state["steps"]["statusline"]["state"], "manual");
+    assert_eq!(state["steps"]["statusline"]["command"], "~/bin/line.sh");
+
+    let output = world
+        .clauset("misc")
+        .args(["setup", "--apply", "statusline"])
+        .output()
+        .unwrap();
+    assert!(!output.status.success());
+    assert!(String::from_utf8_lossy(&output.stderr).contains("statusline"));
+    let settings = fs::read_to_string(home.join(".claude/settings.json")).unwrap();
+    assert!(settings.contains("~/bin/line.sh"), "{settings}");
 }
 
 #[test]
@@ -798,8 +1334,15 @@ fn a_session_moves_to_another_account_in_the_same_terminal() {
         "{out}"
     );
     assert!(out.contains("MARKER:personal"), "{out}");
-    assert!(out.contains("New sessions start on personal too"), "{out}");
-    assert_eq!(default_account(&world), "personal");
+    assert!(
+        out.contains("New sessions still start on team: `clauset use personal` changes that."),
+        "a session that leaves the default account is told the default stayed: {out}"
+    );
+    assert_eq!(
+        default_account(&world),
+        "team",
+        "moving a session leaves the default alone"
+    );
     assert!(
         !home
             .join(".claude/clauset/switch")
@@ -864,7 +1407,7 @@ fn a_session_with_background_shells_moves_once_they_stop() {
 }
 
 #[test]
-fn a_refused_switch_leaves_the_default() {
+fn a_switch_without_the_supervisor_is_refused() {
     let world = World::new();
     let output = world
         .clauset("misc")
@@ -879,7 +1422,6 @@ fn a_refused_switch_leaves_the_default() {
     let err = String::from_utf8_lossy(&output.stderr);
     assert!(err.contains("without clauset's supervisor"), "{err}");
     assert!(err.contains("clauset run team --resume s-1"), "{err}");
-    assert_eq!(default_account(&world), "personal");
 }
 
 #[test]
@@ -899,7 +1441,11 @@ fn switching_to_the_current_account_cancels_a_move() {
 
     assert!(out.contains("the move it asked for is cancelled"), "{out}");
     assert!(!out.contains("RESUMED:"), "{out}");
-    assert_eq!(default_account(&world), "team");
+    assert_eq!(
+        default_account(&world),
+        "personal",
+        "cancelling a move leaves the default alone too"
+    );
 }
 
 #[test]
@@ -1042,7 +1588,10 @@ fn a_switch_of_all_sessions_moves_each_supervised_one_and_names_the_rest() {
         "{out}"
     );
     assert!(!out.contains("stays"), "{out}");
-    assert!(out.contains("New sessions start on personal too"), "{out}");
+    assert!(
+        !out.contains("New sessions"),
+        "team is not the default, so there is nothing to say about new sessions: {out}"
+    );
     assert_eq!(default_account(&world), "personal");
 
     let idle = idle.wait_with_output().unwrap();
@@ -1063,6 +1612,31 @@ fn a_switch_of_all_sessions_moves_each_supervised_one_and_names_the_rest() {
         let left = home.join(".claude/clauset").join(dir).read_dir().unwrap();
         assert_eq!(left.count(), 0, "{dir}");
     }
+}
+
+#[test]
+fn a_switch_of_all_sessions_off_the_default_account_leaves_the_default() {
+    let world = World::new();
+    fs::write(world.home().join("fake/claude"), REGISTERED_CLAUDE).unwrap();
+    let idle = start_session(&world, "idle", "personal", "idle");
+    registered(&world, 1);
+
+    let out = stdout(
+        world
+            .clauset("misc")
+            .args(["switch", "team", "--all", "--from", "personal"])
+            .output()
+            .unwrap(),
+    );
+    assert!(out.contains("These move from personal to team"), "{out}");
+    assert!(
+        out.ends_with("New sessions still start on personal: `clauset use team` changes that.\n"),
+        "{out}"
+    );
+    assert_eq!(default_account(&world), "personal");
+
+    let out = stdout(idle.wait_with_output().unwrap());
+    assert!(out.contains("RESUMED:--resume idle ON:team"), "{out}");
 }
 
 #[test]

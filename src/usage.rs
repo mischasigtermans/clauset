@@ -1,5 +1,4 @@
-//! Rate-limit use per account, from what Claude Code itself stores and
-//! reports. clauset asks Anthropic for nothing: the freshest of an account's
+//! clauset asks Anthropic for nothing: the freshest of an account's
 //! `cachedUsageUtilization` and the last status line seen on it wins.
 
 use std::fs;
@@ -60,6 +59,58 @@ pub fn from_state(state: &Value) -> Option<Limits> {
     )
 }
 
+#[derive(Debug, Clone, PartialEq)]
+pub struct ModelLimit {
+    /// The model's name as Claude Code shows it, such as `Fable`.
+    pub name: String,
+    pub at_ms: i64,
+    pub window: Window,
+}
+
+/// The weekly limits per model in `cachedUsageUtilization`. A status line
+/// gets no such limit, so these are as old as Claude Code's last fetch.
+pub fn models_from_state(state: &Value) -> Vec<ModelLimit> {
+    let Some(cached) = state.get("cachedUsageUtilization") else {
+        return Vec::new();
+    };
+    let Some(at_ms) = cached.get("fetchedAtMs").and_then(Value::as_i64) else {
+        return Vec::new();
+    };
+    cached
+        .pointer("/utilization/limits")
+        .and_then(Value::as_array)
+        .into_iter()
+        .flatten()
+        .filter(|limit| limit.get("kind").and_then(Value::as_str) == Some("weekly_scoped"))
+        .filter_map(|limit| {
+            Some(ModelLimit {
+                name: limit
+                    .pointer("/scope/model/display_name")?
+                    .as_str()?
+                    .to_owned(),
+                at_ms,
+                window: Window {
+                    percent: limit.get("percent")?.as_f64()?,
+                    resets_at: limit
+                        .get("resets_at")
+                        .and_then(Value::as_str)
+                        .and_then(|text| DateTime::parse_from_rfc3339(text).ok())
+                        .map(|time| time.timestamp()),
+                },
+            })
+        })
+        .collect()
+}
+
+pub fn models(config: &Config, account: &str) -> Vec<ModelLimit> {
+    config
+        .account(account)
+        .ok()
+        .and_then(|acct| state::read(&config.state_file(acct)).ok())
+        .map(|state| models_from_state(&state))
+        .unwrap_or_default()
+}
+
 /// The `rate_limits` Claude Code hands a status line command. It sends them
 /// for subscription plans, Team included, and leaves out a window the API
 /// does not report.
@@ -109,6 +160,13 @@ pub fn record(config: &Config, account: &str, limits: &Limits) -> Result<()> {
     state::write(&path, &serde_json::to_value(limits)?)
 }
 
+pub fn forget(config: &Config, account: &str) {
+    if let Some(path) = recorded_path(config, account) {
+        let _ = fs::remove_file(path.with_extension("warned.json"));
+        let _ = fs::remove_file(path);
+    }
+}
+
 /// The `resets_at` of each window already warned about.
 #[derive(Debug, Default, PartialEq, Serialize, Deserialize)]
 struct Warned {
@@ -156,7 +214,6 @@ pub fn newly_crossed(
     crossed
 }
 
-/// The freshest limits known for an account.
 pub fn latest(config: &Config, account: &str) -> Option<Limits> {
     let from_cache = config
         .account(account)
@@ -191,6 +248,32 @@ mod tests {
         assert_eq!(limits.five_hour.unwrap().resets_at, Some(1793881800));
         assert_eq!(limits.seven_day.unwrap().percent, 35.5);
         assert!(from_state(&json!({})).is_none());
+    }
+
+    #[test]
+    fn reads_the_weekly_limit_of_a_model() {
+        let state = json!({"cachedUsageUtilization": {
+            "fetchedAtMs": 7,
+            "utilization": {"limits": [
+                {"kind": "weekly_all", "percent": 42, "resets_at": "2026-11-08T09:00:00+00:00", "scope": null},
+                {"kind": "weekly_scoped", "percent": 30, "resets_at": "2026-11-08T09:00:00+00:00",
+                 "scope": {"model": {"id": null, "display_name": "Fable"}, "surface": null}},
+                {"kind": "weekly_scoped", "percent": 5, "resets_at": null,
+                 "scope": {"model": null, "surface": "cowork"}}
+            ]}
+        }});
+        assert_eq!(
+            models_from_state(&state),
+            vec![ModelLimit {
+                name: "Fable".into(),
+                at_ms: 7,
+                window: Window {
+                    percent: 30.0,
+                    resets_at: Some(1794128400),
+                },
+            }]
+        );
+        assert!(models_from_state(&json!({})).is_empty());
     }
 
     #[test]

@@ -1,4 +1,4 @@
-//! `clauset doctor`: every check reads local state.
+//! Every check reads local state.
 
 use std::env;
 use std::process::Command;
@@ -26,7 +26,7 @@ impl Out {
     }
 }
 
-/// Prints the checks; returns whether none failed.
+/// Returns whether no check failed.
 pub fn run(config: &Config) -> Result<bool> {
     let mut out = Out::default();
 

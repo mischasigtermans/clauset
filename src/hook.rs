@@ -1,6 +1,3 @@
-//! Claude Code hooks: one line of account context at session start, and a
-//! notification when an account hits its limit.
-//!
 //! A hook that cannot decide prints nothing: Claude Code then goes on as if
 //! no hook ran.
 
@@ -9,6 +6,7 @@ use serde_json::{Value, json};
 use std::ffi::OsStr;
 
 use crate::config::{Config, Session};
+use crate::notify;
 use crate::usage::{self, Window};
 
 /// `SessionStart`: tells the model which account it runs on.
@@ -26,10 +24,8 @@ pub fn context(config: &Config, config_dir: Option<&OsStr>) -> Option<String> {
     )
 }
 
-/// `StopFailure` on `rate_limit`: a line for a desktop notification naming
-/// the account that hit its limit, when its fullest window resets, and the
-/// fullest window of every other account. Choosing where to go on is
-/// left to the person: clauset never switches an account on a limit.
+/// `StopFailure` on `rate_limit`. Choosing where to go on is left to the
+/// person: clauset never switches an account on a limit.
 pub fn limit(
     config: &Config,
     input: &str,
@@ -43,7 +39,7 @@ pub fn limit(
     let Session::Account(session) = config.session(config_dir) else {
         return None;
     };
-    let mut text = format!("{session} hit its usage limit");
+    let mut text = format!("{} hit its usage limit", notify::title(session));
     let fullest = usage::latest(config, session).and_then(|limits| {
         [limits.five_hour, limits.seven_day]
             .into_iter()
@@ -68,6 +64,7 @@ pub fn limit(
                     .filter_map(|(label, window)| Some((label, current(window?, now))))
                     .max_by(|a, b| a.1.total_cmp(&b.1))
             });
+            let name = notify::title(name);
             match fullest {
                 Some((label, percent)) => format!("{name} {percent:.0}% {label}"),
                 None => format!("{name} no usage seen"),
@@ -80,7 +77,6 @@ pub fn limit(
     Some(text)
 }
 
-/// A window's use now: nothing once it has reset.
 fn current(window: Window, now: DateTime<Local>) -> f64 {
     match window.resets_at {
         Some(at) if at <= now.timestamp() => 0.0,
@@ -127,8 +123,8 @@ mod tests {
         let input = json!({"cwd": HOME, "error": "rate_limit"}).to_string();
         let personal = format!("{HOME}/.claude-accounts/personal");
         let text = limit(&config, &input, Some(OsStr::new(&personal)), now).unwrap();
-        assert!(text.starts_with("personal hit its usage limit"), "{text}");
-        assert!(text.contains("Elsewhere: team no usage seen"), "{text}");
+        assert!(text.starts_with("Personal hit its usage limit"), "{text}");
+        assert!(text.contains("Elsewhere: Team no usage seen"), "{text}");
 
         let overloaded = json!({"cwd": HOME, "error": "overloaded"}).to_string();
         assert!(limit(&config, &overloaded, Some(OsStr::new(&personal)), now).is_none());

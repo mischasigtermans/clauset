@@ -1,5 +1,3 @@
-//! Links from an account's config dir into the hub.
-
 use std::fs;
 use std::io;
 use std::os::unix::fs::symlink;
@@ -143,12 +141,9 @@ pub fn sync(hub: &Path, dir: &Path, apply: bool) -> Result<Report> {
     Ok(report)
 }
 
-/// Takes in a config dir that ran on its own. What it has that the hub lacks
-/// moves into the hub, and its own copies of shared directories move into
-/// the hub's wherever the hub has no entry of that name, so its sessions,
-/// memory and skills join the shared ones. What stays, and every own copy of
-/// a shared file, is renamed `<name>.before-clauset`. Then everything shared
-/// is linked. Returns the names set aside.
+/// A config dir's own copies of shared directories merge into the hub's, so
+/// its sessions, memory and skills join the shared ones. Returns the names
+/// set aside as `<name>.before-clauset`.
 pub fn adopt(hub: &Path, dir: &Path) -> Result<Vec<String>> {
     for entry in fs::read_dir(dir).with_context(|| format!("reading {}", dir.display()))? {
         let entry = entry?;
@@ -181,8 +176,7 @@ pub fn adopt(hub: &Path, dir: &Path) -> Result<Vec<String>> {
     Ok(aside)
 }
 
-/// Moves what `from` holds into `into` where `into` has no entry of that
-/// name, descending into directories both have. Nothing in `into` is touched.
+/// Nothing in `into` is touched.
 fn merge(from: &Path, into: &Path) -> Result<()> {
     for entry in fs::read_dir(from)? {
         let entry = entry?;

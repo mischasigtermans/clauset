@@ -1,5 +1,3 @@
-//! What Claude Code keeps per account: `.claude.json` and the Keychain item.
-
 use std::fs;
 use std::io::Write;
 use std::os::unix::fs::OpenOptionsExt;
@@ -10,7 +8,6 @@ use anyhow::{Context, Result};
 use serde_json::Value;
 use sha2::{Digest, Sha256};
 
-/// Who an account's `.claude.json` says is signed in.
 #[derive(Debug, Default, PartialEq, Eq)]
 pub struct SignIn {
     pub email: String,
@@ -113,9 +110,7 @@ const ANSWERED_ONCE: &[&str] = &[
     "resumeReturnDismissed",
 ];
 
-/// Fills in what the hub's state has answered and the account's lacks: the
-/// answered-once keys and the trust of every project the hub trusts. Keys the
-/// account has keep their values. Returns whether anything changed.
+/// Keys the account has keep their values. Returns whether anything changed.
 pub fn seed(hub: &Value, state: &mut Value) -> bool {
     if !state.is_object() {
         *state = Value::Object(Default::default());
@@ -148,7 +143,6 @@ pub fn trust(state: &mut Value, path: &str) -> bool {
     true
 }
 
-/// Whether an account's state trusts `path`.
 pub fn trusts(state: &Value, path: &str) -> bool {
     state["projects"][path]["hasTrustDialogAccepted"] == Value::Bool(true)
 }
@@ -165,7 +159,6 @@ pub fn keychain_service(dir: &Path, hub: bool) -> String {
     format!("{SERVICE}-{}", short_hash(&dir))
 }
 
-/// The first 8 hex digits of the SHA-256 of a path.
 pub fn short_hash(path: &Path) -> String {
     Sha256::digest(path.as_os_str().as_encoded_bytes())[..4]
         .iter()
@@ -173,8 +166,7 @@ pub fn short_hash(path: &Path) -> String {
         .collect()
 }
 
-/// Whether the login Keychain holds the item. Asks for its attributes only,
-/// never the secret.
+/// Asks for the item's attributes only, never the secret.
 pub fn keychain_has(service: &str) -> bool {
     Command::new("security")
         .args(["find-generic-password", "-s", service])

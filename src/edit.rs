@@ -66,6 +66,12 @@ impl ConfigFile {
         self.doc["accounts"][name] = Item::Table(account);
     }
 
+    pub fn remove_account(&mut self, name: &str) {
+        if let Some(accounts) = self.doc["accounts"].as_table_like_mut() {
+            accounts.remove(name);
+        }
+    }
+
     /// Sets or, with `None`, removes `warn_at`, for one account or all.
     pub fn set_warn(&mut self, account: Option<&str>, percent: Option<u8>) {
         let table = match account {
@@ -84,11 +90,19 @@ impl ConfigFile {
         }
     }
 
+    pub fn set_chrome(&mut self, account: Option<&str>) {
+        match account {
+            Some(name) => self.doc["chrome"] = value(name),
+            None => {
+                self.doc.remove("chrome");
+            }
+        }
+    }
+
     pub fn set_org(&mut self, name: &str, org: &str) {
         self.doc["accounts"][name]["org"] = value(org);
     }
 
-    /// Writes the config after checking it parses as one.
     pub fn save(&self) -> Result<Config> {
         let text = self.doc.to_string();
         let config = Config::parse(&text, &self.home)
